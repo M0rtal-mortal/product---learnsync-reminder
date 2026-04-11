@@ -1,5 +1,5 @@
 import { useState, useMemo } from 'react';
-import { Plus, RefreshCw, Trash2, AlertTriangle, ChevronLeft, ChevronRight, Download } from 'lucide-react';
+import { Plus, RefreshCw, Trash2, AlertTriangle, ChevronLeft, ChevronRight, Download, Edit2 } from 'lucide-react';
 import { toast } from 'sonner';
 import type { Course, Meeting, Exam, ConflictPair, ScheduleEvent } from '@/types';
 import { coursesApi } from '@/lib/api';
@@ -47,9 +47,14 @@ export default function ScheduleView({ courses, meetings, exams, onCoursesChange
   const [view, setView] = useState<CalendarView>('week');
   const [importing, setImporting] = useState(false);
   const [showAddCourse, setShowAddCourse] = useState(false);
+  const [showEditCourse, setShowEditCourse] = useState(false);
+  const [editingCourse, setEditingCourse] = useState<Course | null>(null);
   const [deletingId, setDeletingId] = useState<string | null>(null);
   const [currentWeekOffset, setCurrentWeekOffset] = useState(0);
   const [newCourse, setNewCourse] = useState({
+    name: '', teacher: '', location: '', dayOfWeek: 0, startTime: '08:00', endTime: '09:40', color: 'primary',
+  });
+  const [editCourse, setEditCourse] = useState({
     name: '', teacher: '', location: '', dayOfWeek: 0, startTime: '08:00', endTime: '09:40', color: 'primary',
   });
 
@@ -74,12 +79,31 @@ export default function ScheduleView({ courses, meetings, exams, onCoursesChange
   const conflicts = useMemo(() => detectConflicts(scheduleEvents), [scheduleEvents]);
   const conflictIds = useMemo(() => new Set(conflicts.flatMap(c => [c.event1.id, c.event2.id])), [conflicts]);
 
-  const handleImport = async () => {
-    setImporting(true);
+  const [showSchoolLogin, setShowSchoolLogin] = useState(false);
+  const [school, setSchool] = useState('');
+  const [schoolUsername, setSchoolUsername] = useState('');
+  const [schoolPassword, setSchoolPassword] = useState('');
+  const [loginLoading, setLoginLoading] = useState(false);
+
+  const handleImport = () => {
+    setShowSchoolLogin(true);
+  };
+
+  const handleSchoolLogin = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!school || !schoolUsername || !schoolPassword) {
+      toast.error('请填写所有字段');
+      return;
+    }
+    setLoginLoading(true);
     try {
-      const res = await coursesApi.import();
+      const res = await coursesApi.import({ school, username: schoolUsername, password: schoolPassword });
       if (res.success) {
-        toast.success('课表导入成功', { description: res.message || `已导入 ${Array.isArray(res.data) ? res.data.length : 0} 门课程` });
+        toast.success('课表导入成功', { description: res.message || `已从${school}信息门户导入 ${Array.isArray(res.data) ? res.data.length : 0} 门课程` });
+        setShowSchoolLogin(false);
+        setSchool('');
+        setSchoolUsername('');
+        setSchoolPassword('');
         onCoursesChange();
       } else {
         toast.error('导入失败', { description: res.message });
@@ -87,7 +111,7 @@ export default function ScheduleView({ courses, meetings, exams, onCoursesChange
     } catch {
       toast.error('网络错误，请稍后重试');
     } finally {
-      setImporting(false);
+      setLoginLoading(false);
     }
   };
 
@@ -120,6 +144,38 @@ export default function ScheduleView({ courses, meetings, exams, onCoursesChange
         onCoursesChange();
       } else {
         toast.error('添加失败', { description: res.message });
+      }
+    } catch {
+      toast.error('网络错误');
+    }
+  };
+
+  const handleEditCourse = (course: Course) => {
+    setEditingCourse(course);
+    setEditCourse({
+      name: course.name,
+      teacher: course.teacher,
+      location: course.location,
+      dayOfWeek: course.dayOfWeek,
+      startTime: course.startTime,
+      endTime: course.endTime,
+      color: course.color,
+    });
+    setShowEditCourse(true);
+  };
+
+  const handleSaveEdit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!editingCourse) return;
+    try {
+      const res = await coursesApi.update(editingCourse.id, editCourse);
+      if (res.success) {
+        toast.success('课程已更新');
+        setShowEditCourse(false);
+        setEditingCourse(null);
+        onCoursesChange();
+      } else {
+        toast.error('更新失败', { description: res.message });
       }
     } catch {
       toast.error('网络错误');
@@ -404,18 +460,111 @@ export default function ScheduleView({ courses, meetings, exams, onCoursesChange
                 </div>
                 {course.teacher && <span className="text-xs text-[oklch(0.48_0.05_240)] hidden sm:block">{course.teacher}</span>}
                 {course.isImported && <span className="text-xs bg-[oklch(0.28_0.07_240)]/10 text-[oklch(0.28_0.07_240)] px-2 py-0.5 rounded-full">已导入</span>}
-                <button
-                  onClick={() => handleDeleteCourse(course.id)}
-                  disabled={deletingId === course.id}
-                  className="opacity-0 group-hover:opacity-100 p-1.5 hover:bg-red-50 rounded-lg transition-all text-red-500 disabled:opacity-50"
-                >
-                  <Trash2 className="w-3.5 h-3.5" />
-                </button>
+                <div className="flex items-center gap-1">
+                  <button
+                    onClick={() => handleEditCourse(course)}
+                    className="opacity-0 group-hover:opacity-100 p-1.5 hover:bg-[oklch(0.28_0.07_240)]/10 rounded-lg transition-all text-[oklch(0.28_0.07_240)]"
+                  >
+                    <Edit2 className="w-3.5 h-3.5" />
+                  </button>
+                  <button
+                    onClick={() => handleDeleteCourse(course.id)}
+                    disabled={deletingId === course.id}
+                    className="opacity-0 group-hover:opacity-100 p-1.5 hover:bg-red-50 rounded-lg transition-all text-red-500 disabled:opacity-50"
+                  >
+                    <Trash2 className="w-3.5 h-3.5" />
+                  </button>
+                </div>
               </div>
             ))}
           </div>
         )}
       </div>
+
+      {/* School Login Form */}
+      {showSchoolLogin && (
+        <div className="bg-white rounded-2xl border border-[oklch(0.87_0.02_240)] shadow-sm p-6">
+          <h3 className="font-bold text-[oklch(0.12_0.025_240)] mb-4 font-serif">学校信息门户登录</h3>
+          <form onSubmit={handleSchoolLogin} className="space-y-4">
+            <div>
+              <label className="block text-xs font-medium text-[oklch(0.12_0.025_240)] mb-1">学校名称 *</label>
+              <input value={school} onChange={e => setSchool(e.target.value)}
+                placeholder="例：北京大学" className="w-full px-3 py-2 bg-[oklch(0.955_0.008_240)] border border-[oklch(0.87_0.02_240)] rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-[oklch(0.28_0.07_240)]/30 focus:border-[oklch(0.28_0.07_240)] transition-all" />
+            </div>
+            <div>
+              <label className="block text-xs font-medium text-[oklch(0.12_0.025_240)] mb-1">用户名 *</label>
+              <input value={schoolUsername} onChange={e => setSchoolUsername(e.target.value)}
+                placeholder="例：20220101" className="w-full px-3 py-2 bg-[oklch(0.955_0.008_240)] border border-[oklch(0.87_0.02_240)] rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-[oklch(0.28_0.07_240)]/30 focus:border-[oklch(0.28_0.07_240)] transition-all" />
+            </div>
+            <div>
+              <label className="block text-xs font-medium text-[oklch(0.12_0.025_240)] mb-1">密码 *</label>
+              <input type="password" value={schoolPassword} onChange={e => setSchoolPassword(e.target.value)}
+                placeholder="请输入信息门户密码" className="w-full px-3 py-2 bg-[oklch(0.955_0.008_240)] border border-[oklch(0.87_0.02_240)] rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-[oklch(0.28_0.07_240)]/30 focus:border-[oklch(0.28_0.07_240)] transition-all" />
+            </div>
+            <div className="flex gap-3 justify-end">
+              <button type="button" onClick={() => setShowSchoolLogin(false)}
+                className="px-4 py-2 text-sm text-[oklch(0.48_0.05_240)] hover:text-[oklch(0.12_0.025_240)] border border-[oklch(0.87_0.02_240)] rounded-xl transition-all">
+                取消
+              </button>
+              <button type="submit" disabled={loginLoading}
+                className="px-6 py-2 bg-[oklch(0.28_0.07_240)] text-white text-sm font-semibold rounded-xl hover:bg-[oklch(0.32_0.07_240)] transition-all disabled:opacity-60">
+                {loginLoading ? '登录中...' : '登录并导入课表'}
+              </button>
+            </div>
+          </form>
+        </div>
+      )}
+
+      {/* Edit Course Form */}
+      {showEditCourse && (
+        <div className="bg-white rounded-2xl border border-[oklch(0.87_0.02_240)] shadow-sm p-6">
+          <h3 className="font-bold text-[oklch(0.12_0.025_240)] mb-4 font-serif">编辑课程</h3>
+          <form onSubmit={handleSaveEdit} className="grid sm:grid-cols-2 gap-4">
+            <div>
+              <label className="block text-xs font-medium text-[oklch(0.12_0.025_240)] mb-1">课程名称 *</label>
+              <input value={editCourse.name} onChange={e => setEditCourse(p => ({ ...p, name: e.target.value }))}
+                placeholder="例：高等数学" className="w-full px-3 py-2 bg-[oklch(0.955_0.008_240)] border border-[oklch(0.87_0.02_240)] rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-[oklch(0.28_0.07_240)]/30 focus:border-[oklch(0.28_0.07_240)] transition-all" />
+            </div>
+            <div>
+              <label className="block text-xs font-medium text-[oklch(0.12_0.025_240)] mb-1">授课教师</label>
+              <input value={editCourse.teacher} onChange={e => setEditCourse(p => ({ ...p, teacher: e.target.value }))}
+                placeholder="例：张教授" className="w-full px-3 py-2 bg-[oklch(0.955_0.008_240)] border border-[oklch(0.87_0.02_240)] rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-[oklch(0.28_0.07_240)]/30 focus:border-[oklch(0.28_0.07_240)] transition-all" />
+            </div>
+            <div>
+              <label className="block text-xs font-medium text-[oklch(0.12_0.025_240)] mb-1">上课地点</label>
+              <input value={editCourse.location} onChange={e => setEditCourse(p => ({ ...p, location: e.target.value }))}
+                placeholder="例：主楼A101" className="w-full px-3 py-2 bg-[oklch(0.955_0.008_240)] border border-[oklch(0.87_0.02_240)] rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-[oklch(0.28_0.07_240)]/30 focus:border-[oklch(0.28_0.07_240)] transition-all" />
+            </div>
+            <div>
+              <label className="block text-xs font-medium text-[oklch(0.12_0.025_240)] mb-1">星期</label>
+              <select value={editCourse.dayOfWeek} onChange={e => setEditCourse(p => ({ ...p, dayOfWeek: Number(e.target.value) }))}
+                className="w-full px-3 py-2 bg-[oklch(0.955_0.008_240)] border border-[oklch(0.87_0.02_240)] rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-[oklch(0.28_0.07_240)]/30 focus:border-[oklch(0.28_0.07_240)] transition-all">
+                {DAY_LABELS.map((d, i) => <option key={i} value={i}>{d}</option>)}
+              </select>
+            </div>
+            <div>
+              <label className="block text-xs font-medium text-[oklch(0.12_0.025_240)] mb-1">开始时间</label>
+              <input type="time" value={editCourse.startTime} onChange={e => setEditCourse(p => ({ ...p, startTime: e.target.value }))}
+                className="w-full px-3 py-2 bg-[oklch(0.955_0.008_240)] border border-[oklch(0.87_0.02_240)] rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-[oklch(0.28_0.07_240)]/30 focus:border-[oklch(0.28_0.07_240)] transition-all" />
+            </div>
+            <div>
+              <label className="block text-xs font-medium text-[oklch(0.12_0.025_240)] mb-1">结束时间</label>
+              <input type="time" value={editCourse.endTime} onChange={e => setEditCourse(p => ({ ...p, endTime: e.target.value }))}
+                className="w-full px-3 py-2 bg-[oklch(0.955_0.008_240)] border border-[oklch(0.87_0.02_240)] rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-[oklch(0.28_0.07_240)]/30 focus:border-[oklch(0.28_0.07_240)] transition-all" />
+            </div>
+            <div className="sm:col-span-2 flex gap-3 justify-end">
+              <button type="button" onClick={() => setShowEditCourse(false)}
+                className="px-4 py-2 text-sm text-[oklch(0.48_0.05_240)] hover:text-[oklch(0.12_0.025_240)] border border-[oklch(0.87_0.02_240)] rounded-xl transition-all">
+                取消
+              </button>
+              <button type="submit"
+                className="px-6 py-2 bg-[oklch(0.28_0.07_240)] text-white text-sm font-semibold rounded-xl hover:bg-[oklch(0.32_0.07_240)] transition-all">
+                保存修改
+              </button>
+            </div>
+          </form>
+        </div>
+      )}
     </div>
   );
 }

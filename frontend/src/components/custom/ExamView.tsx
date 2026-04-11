@@ -4,6 +4,29 @@ import { toast } from 'sonner';
 import type { Exam, ExamMilestone, CreateExamInput, ExamStatus } from '@/types';
 import { examsApi } from '@/lib/api';
 
+// Get exam dates for the current year based on common schedules
+const getCurrentYearExamDates = () => {
+  const currentYear = new Date().getFullYear();
+  return {
+    CET4: {
+     上半年: `${currentYear}-06-15`, // 通常在6月第三个周六
+     下半年: `${currentYear}-12-15`, // 通常在12月第三个周六
+    },
+    CET6: {
+     上半年: `${currentYear}-06-15`, // 通常与CET4同一天
+     下半年: `${currentYear}-12-15`, // 通常与CET4同一天
+    },
+    NCRE1: {
+     上半年: `${currentYear}-03-30`, // 通常在3月底
+     下半年: `${currentYear}-09-28`, // 通常在9月底
+    },
+    NCRE2: {
+     上半年: `${currentYear}-03-30`, // 通常与NCRE1同一天
+     下半年: `${currentYear}-09-28`, // 通常与NCRE1同一天
+    },
+  };
+};
+
 const EXAM_TEMPLATES = [
   { name: '大学英语四级 (CET-4)', examType: 'CET4', reminderDaysBefore: 14 },
   { name: '大学英语六级 (CET-6)', examType: 'CET6', reminderDaysBefore: 14 },
@@ -49,7 +72,38 @@ export default function ExamView({ exams, onExamsChange }: Props) {
   const handleTemplateSelect = (idx: number) => {
     setSelectedTemplate(idx);
     const t = EXAM_TEMPLATES[idx];
-    setNewExam(p => ({ ...p, name: t.name, examType: t.examType, reminderDaysBefore: t.reminderDaysBefore }));
+    const examDates = getCurrentYearExamDates();
+    let examDate = '';
+    
+    // 根据当前时间选择合适的考试日期
+    if (t.examType !== 'custom') {
+      const currentDate = new Date();
+      const examDateOptions = examDates[t.examType as keyof typeof examDates];
+      if (examDateOptions) {
+        const firstHalfYear = new Date(examDateOptions.上半年);
+        const secondHalfYear = new Date(examDateOptions.下半年);
+        
+        // 如果当前时间在上半年考试之前，选择上半年考试
+        // 否则选择下半年考试
+        if (currentDate < firstHalfYear) {
+          examDate = examDateOptions.上半年;
+        } else if (currentDate < secondHalfYear) {
+          examDate = examDateOptions.下半年;
+        } else {
+          // 如果下半年考试也已过去，选择下一年的上半年考试
+          const nextYear = currentDate.getFullYear() + 1;
+          examDate = `${nextYear}-06-15`; // 默认下一年6月
+        }
+      }
+    }
+    
+    setNewExam(p => ({ 
+      ...p, 
+      name: t.name, 
+      examType: t.examType, 
+      reminderDaysBefore: t.reminderDaysBefore,
+      examDate
+    }));
   };
 
   const handleAddExam = async (e: React.FormEvent) => {

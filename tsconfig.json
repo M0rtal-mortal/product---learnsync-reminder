@@ -16,6 +16,6 @@
     "isolatedModules": true,
     "resolveJsonModule": true
   },
-  "include": ["backend/**/*", "shared/**/*", "drizzle.config.ts"],
+  "include": ["backend/server.ts", "backend/config/**/*", "backend/middleware/**/*", "backend/routes/auth.ts", "shared/**/*", "drizzle.config.ts"],
   "exclude": ["node_modules", "frontend", "dist"]
 }

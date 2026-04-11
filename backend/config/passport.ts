@@ -30,7 +30,7 @@ passport.use(
         }
         
         // Return the user without the password
-        const { password: _, ...userWithoutPassword } = user;
+        const { password: _, ...userWithoutPassword } = user!;
         return done(null, userWithoutPassword);
       } catch (error) {
         return done(error);
@@ -58,7 +58,7 @@ passport.use(
         }
         
         // Return the user without the password
-        const { password: _, ...userWithoutPassword } = user;
+        const { password: _, ...userWithoutPassword } = user!;
         return done(null, userWithoutPassword);
       } catch (error) {
         return done(error, false);

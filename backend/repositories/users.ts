@@ -1,38 +1,40 @@
-import { db } from '../db';
-import { users, InsertUser, insertUserSchema } from '../db/schema';
-import { eq } from 'drizzle-orm';
 import bcrypt from 'bcryptjs';
 import { z } from 'zod';
 
-// Use Zod-inferred type for repository inputs so routes can pass
-// `insertUserSchema.parse(...)` directly without type mismatches.
-type CreateUserInput = z.infer<typeof insertUserSchema>;
+// In-memory storage for users
+const users: any[] = [];
+
+// Use Zod-inferred type for repository inputs
+type CreateUserInput = {
+  email: string;
+  password: string;
+  name: string;
+};
 
 export class UserRepository {
   async create(userData: CreateUserInput) {
     // Hash password before storing
     const hashedPassword = await bcrypt.hash(userData.password, 10);
 
-    const [user] = await db
-      .insert(users)
-      // Drizzle expects InsertUser; we trust Zod validation and assert here.
-      .values({
-        ...userData,
-        password: hashedPassword,
-      } as InsertUser)
-      .returning();
+    const user = {
+      id: Date.now().toString(),
+      ...userData,
+      password: hashedPassword,
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
+    };
 
+    users.push(user);
     return user;
   }
 
   async findByEmail(email: string) {
-    const [user] = await db.select().from(users).where(eq(users.email, email));
-
+    const user = users.find(u => u.email === email);
     return user;
   }
 
   async findAll() {
-    return await db.select().from(users);
+    return users;
   }
 
   async verifyPassword(plainPassword: string, hashedPassword: string) {

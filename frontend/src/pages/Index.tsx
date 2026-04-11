@@ -286,7 +286,7 @@ export default function Index() {
                       <CalendarDays className="w-5 h-5 text-white" />
                     </div>
                     <div className="flex-1">
-                      <p className="text-white text-sm font-medium">北京工商大学教务系统</p>
+                      <p className="text-white text-sm font-medium">南京审计大学教务系统</p>
                       <p className="text-white/50 text-xs">上次同步：{loading ? '加载中...' : courses.length > 0 ? '已同步' : '未同步'}</p>
                     </div>
                     {courses.length > 0 && (
@@ -592,7 +592,7 @@ export default function Index() {
               <span className="text-sm text-white/50 cursor-pointer hover:text-white/80 transition-colors">使用条款</span>
               <span className="text-sm text-white/50 cursor-pointer hover:text-white/80 transition-colors">帮助中心</span>
             </div>
-            <p className="text-xs text-white/30">© 2026 CampusSync · 马銀凡</p>
+            <p className="text-xs text-white/30">© 2026 CampusSync · 马垠凡</p>
           </div>
         </div>
       </footer>

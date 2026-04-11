@@ -52,8 +52,8 @@ export const coursesApi = {
     request<Course>(`/api/courses/${id}`, { method: 'PUT', body: JSON.stringify(data) }),
   delete: (id: string) =>
     request<null>(`/api/courses/${id}`, { method: 'DELETE' }),
-  import: () =>
-    request<Course[]>('/api/courses/import', { method: 'POST' }),
+  import: (schoolData: { school: string; username: string; password: string }) =>
+    request<Course[]>('/api/courses/import', { method: 'POST', body: JSON.stringify(schoolData) }),
 };
 
 // ============================================
