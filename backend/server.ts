@@ -6,12 +6,15 @@ import { SERVER_CONFIG } from './config/constants';
 import { errorHandler } from './middleware/errorHandler';
 
 import authRoutes from './routes/auth';
+import { SchoolPortalService } from './services/schoolPortalService';
+
+const schoolPortalService = new SchoolPortalService();
 
 const app = express();
 
 // CORS middleware
 app.use((req, res, next) => {
-  res.setHeader('Access-Control-Allow-Origin', 'http://localhost:3000');
+  res.setHeader('Access-Control-Allow-Origin', 'http://localhost:3002');
   res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
   res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization');
   res.setHeader('Access-Control-Allow-Credentials', 'true');
@@ -126,92 +129,20 @@ app.post('/api/courses/import', async (req, res) => {
   }
   
   try {
-    console.log(`正在搜索 ${school} 信息门户...`);
-    
-    // Step 1: Search for the school's information portal URL
-    // In a real implementation, this would be a web search
-    // For demonstration, we'll use predefined URLs
-    let portalUrl = '';
-    if (school.includes('北京大学')) {
-      portalUrl = 'https://portal.pku.edu.cn';
-    } else if (school.includes('清华大学')) {
-      portalUrl = 'https://info.tsinghua.edu.cn';
-    } else if (school.includes('南京审计大学')) {
-      portalUrl = 'https://my.nau.edu.cn';
-    } else {
-      portalUrl = `https://portal.${school.replace(/\s+/g, '')}.edu.cn`;
-    }
-    
-    console.log(`找到 ${school} 信息门户: ${portalUrl}`);
     console.log(`正在登录 ${school} 信息门户...`);
     console.log(`用户名: ${username}`);
-    console.log(`密码: ${password}`);
     
-    // Step 2: Generate courses based on the school
-    // In a real implementation, this would use Puppeteer to navigate and extract data
-    // Due to sandbox restrictions, we'll generate courses directly
-    const currentDate = new Date();
-    const currentYear = currentDate.getFullYear();
-    const currentMonth = currentDate.getMonth() + 1;
-    const semester = currentMonth <= 6 ? `${currentYear}春季` : `${currentYear}秋季`;
+    // Step 1: Login to school portal and fetch courses
+    const courses = await schoolPortalService.loginAndFetchCourses(school, username, password);
     
-    // Generate courses specific to the school
-    let sampleCourses = [];
-    
-    if (school.includes('北京大学')) {
-      sampleCourses = [
-        { id: Date.now().toString() + '1', name: '高等数学', teacher: '张教授', location: '理科楼101', dayOfWeek: 0, startTime: '08:00', endTime: '09:40', color: 'primary', isImported: true, semester, createdAt: new Date().toISOString(), updatedAt: new Date().toISOString() },
-        { id: Date.now().toString() + '2', name: '大学英语', teacher: '李教授', location: '外语楼201', dayOfWeek: 0, startTime: '14:00', endTime: '15:40', color: 'secondary', isImported: true, semester, createdAt: new Date().toISOString(), updatedAt: new Date().toISOString() },
-        { id: Date.now().toString() + '3', name: '哲学导论', teacher: '王教授', location: '文科楼301', dayOfWeek: 1, startTime: '10:00', endTime: '11:40', color: 'primary', isImported: true, semester, createdAt: new Date().toISOString(), updatedAt: new Date().toISOString() },
-        { id: Date.now().toString() + '4', name: '高等数学', teacher: '张教授', location: '理科楼101', dayOfWeek: 2, startTime: '14:00', endTime: '15:40', color: 'primary', isImported: true, semester, createdAt: new Date().toISOString(), updatedAt: new Date().toISOString() },
-        { id: Date.now().toString() + '5', name: '计算机基础', teacher: '陈教授', location: '计算机楼301', dayOfWeek: 3, startTime: '08:00', endTime: '09:40', color: 'primary', isImported: true, semester, createdAt: new Date().toISOString(), updatedAt: new Date().toISOString() },
-        { id: Date.now().toString() + '6', name: '中国近代史', teacher: '王教授', location: '文科楼205', dayOfWeek: 3, startTime: '10:00', endTime: '11:40', color: 'secondary', isImported: true, semester, createdAt: new Date().toISOString(), updatedAt: new Date().toISOString() },
-        { id: Date.now().toString() + '7', name: '物理实验', teacher: '刘教授', location: '实验楼102', dayOfWeek: 4, startTime: '10:00', endTime: '11:40', color: 'primary', isImported: true, semester, createdAt: new Date().toISOString(), updatedAt: new Date().toISOString() },
-      ];
-    } else if (school.includes('清华大学')) {
-      sampleCourses = [
-        { id: Date.now().toString() + '1', name: '高等数学', teacher: '张教授', location: '理科楼101', dayOfWeek: 0, startTime: '08:00', endTime: '09:40', color: 'primary', isImported: true, semester, createdAt: new Date().toISOString(), updatedAt: new Date().toISOString() },
-        { id: Date.now().toString() + '2', name: '大学英语', teacher: '李教授', location: '外语楼201', dayOfWeek: 0, startTime: '14:00', endTime: '15:40', color: 'secondary', isImported: true, semester, createdAt: new Date().toISOString(), updatedAt: new Date().toISOString() },
-        { id: Date.now().toString() + '3', name: '计算机科学导论', teacher: '王教授', location: '计算机楼301', dayOfWeek: 1, startTime: '10:00', endTime: '11:40', color: 'primary', isImported: true, semester, createdAt: new Date().toISOString(), updatedAt: new Date().toISOString() },
-        { id: Date.now().toString() + '4', name: '高等数学', teacher: '张教授', location: '理科楼101', dayOfWeek: 2, startTime: '14:00', endTime: '15:40', color: 'primary', isImported: true, semester, createdAt: new Date().toISOString(), updatedAt: new Date().toISOString() },
-        { id: Date.now().toString() + '5', name: '数据结构', teacher: '陈教授', location: '计算机楼301', dayOfWeek: 3, startTime: '08:00', endTime: '09:40', color: 'primary', isImported: true, semester, createdAt: new Date().toISOString(), updatedAt: new Date().toISOString() },
-        { id: Date.now().toString() + '6', name: '线性代数', teacher: '王教授', location: '理科楼205', dayOfWeek: 3, startTime: '10:00', endTime: '11:40', color: 'secondary', isImported: true, semester, createdAt: new Date().toISOString(), updatedAt: new Date().toISOString() },
-        { id: Date.now().toString() + '7', name: '算法设计与分析', teacher: '刘教授', location: '计算机楼102', dayOfWeek: 4, startTime: '10:00', endTime: '11:40', color: 'primary', isImported: true, semester, createdAt: new Date().toISOString(), updatedAt: new Date().toISOString() },
-      ];
-    } else if (school.includes('南京审计大学')) {
-      sampleCourses = [
-        { id: Date.now().toString() + '1', name: '高等数学', teacher: '张教授', location: '教学楼A101', dayOfWeek: 0, startTime: '08:00', endTime: '09:40', color: 'primary', isImported: true, semester, createdAt: new Date().toISOString(), updatedAt: new Date().toISOString() },
-        { id: Date.now().toString() + '2', name: '大学英语', teacher: '李教授', location: '教学楼B201', dayOfWeek: 0, startTime: '14:00', endTime: '15:40', color: 'secondary', isImported: true, semester, createdAt: new Date().toISOString(), updatedAt: new Date().toISOString() },
-        { id: Date.now().toString() + '3', name: '审计学原理', teacher: '王教授', location: '审计楼301', dayOfWeek: 1, startTime: '10:00', endTime: '11:40', color: 'primary', isImported: true, semester, createdAt: new Date().toISOString(), updatedAt: new Date().toISOString() },
-        { id: Date.now().toString() + '4', name: '高等数学', teacher: '张教授', location: '教学楼A101', dayOfWeek: 2, startTime: '14:00', endTime: '15:40', color: 'primary', isImported: true, semester, createdAt: new Date().toISOString(), updatedAt: new Date().toISOString() },
-        { id: Date.now().toString() + '5', name: '会计学', teacher: '陈教授', location: '会计楼301', dayOfWeek: 3, startTime: '08:00', endTime: '09:40', color: 'primary', isImported: true, semester, createdAt: new Date().toISOString(), updatedAt: new Date().toISOString() },
-        { id: Date.now().toString() + '6', name: '经济学基础', teacher: '王教授', location: '经济楼205', dayOfWeek: 3, startTime: '10:00', endTime: '11:40', color: 'secondary', isImported: true, semester, createdAt: new Date().toISOString(), updatedAt: new Date().toISOString() },
-        { id: Date.now().toString() + '7', name: '统计学', teacher: '刘教授', location: '统计楼102', dayOfWeek: 4, startTime: '10:00', endTime: '11:40', color: 'primary', isImported: true, semester, createdAt: new Date().toISOString(), updatedAt: new Date().toISOString() },
-      ];
-    } else {
-      // Default courses for other schools
-      sampleCourses = [
-        { id: Date.now().toString() + '1', name: '高等数学', teacher: '张教授', location: '主楼A101', dayOfWeek: 0, startTime: '08:00', endTime: '09:40', color: 'primary', isImported: true, semester, createdAt: new Date().toISOString(), updatedAt: new Date().toISOString() },
-        { id: Date.now().toString() + '2', name: '大学英语', teacher: '李教授', location: '主楼B201', dayOfWeek: 0, startTime: '14:00', endTime: '15:40', color: 'secondary', isImported: true, semester, createdAt: new Date().toISOString(), updatedAt: new Date().toISOString() },
-        { id: Date.now().toString() + '3', name: '管理学原理', teacher: '王教授', location: '主楼C301', dayOfWeek: 1, startTime: '10:00', endTime: '11:40', color: 'primary', isImported: true, semester, createdAt: new Date().toISOString(), updatedAt: new Date().toISOString() },
-        { id: Date.now().toString() + '4', name: '高等数学', teacher: '张教授', location: '主楼A101', dayOfWeek: 2, startTime: '14:00', endTime: '15:40', color: 'primary', isImported: true, semester, createdAt: new Date().toISOString(), updatedAt: new Date().toISOString() },
-        { id: Date.now().toString() + '5', name: '市场营销学', teacher: '陈教授', location: '主楼A301', dayOfWeek: 3, startTime: '08:00', endTime: '09:40', color: 'primary', isImported: true, semester, createdAt: new Date().toISOString(), updatedAt: new Date().toISOString() },
-        { id: Date.now().toString() + '6', name: '经济学基础', teacher: '王教授', location: '主楼B205', dayOfWeek: 3, startTime: '10:00', endTime: '11:40', color: 'secondary', isImported: true, semester, createdAt: new Date().toISOString(), updatedAt: new Date().toISOString() },
-        { id: Date.now().toString() + '7', name: '统计学', teacher: '刘教授', location: '主楼D102', dayOfWeek: 4, startTime: '10:00', endTime: '11:40', color: 'primary', isImported: true, semester, createdAt: new Date().toISOString(), updatedAt: new Date().toISOString() },
-      ];
-    }
-    
-    // Step 3: Save courses to storage
+    // Step 2: Save courses to storage
     inMemoryStorage.courses = [];
-    inMemoryStorage.courses.push(...sampleCourses);
+    inMemoryStorage.courses.push(...courses);
     
-    // Simulate a delay to make it feel like a real process
-    setTimeout(() => {
-      res.json({ success: true, data: sampleCourses, message: `成功从${school}信息门户导入 ${sampleCourses.length} 门课程` });
-    }, 1500);
+    res.json({ success: true, data: courses, message: `成功从${school}信息门户导入 ${courses.length} 门课程` });
   } catch (error) {
-    console.error('Error importing courses:', error);
-    res.status(500).json({ success: false, message: '导入课程失败，请稍后重试' });
+    console.error('导入课程失败:', error);
+    res.status(500).json({ success: false, message: '导入课程失败，请检查您的用户名和密码是否正确' });
   }
 });
 

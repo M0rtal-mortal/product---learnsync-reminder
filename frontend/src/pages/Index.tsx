@@ -68,21 +68,10 @@ export default function Index() {
     navigate('/login', { replace: true });
   };
 
-  const handleImport = async () => {
-    setImporting(true);
-    try {
-      const res = await coursesApi.import();
-      if (res.success) {
-        toast.success('课表导入成功', { description: res.message || `已导入 ${Array.isArray(res.data) ? res.data.length : 0} 门课程` });
-        fetchAll();
-      } else {
-        toast.error('导入失败');
-      }
-    } catch {
-      toast.error('网络错误');
-    } finally {
-      setImporting(false);
-    }
+  const handleImport = () => {
+    // 这里应该打开学校信息门户登录表单
+    // 实际的导入逻辑在 ScheduleView 组件中实现
+    toast.info('请在日程总览页面中导入课表');
   };
 
   // Compute conflicts

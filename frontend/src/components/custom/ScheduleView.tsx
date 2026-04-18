@@ -84,6 +84,17 @@ export default function ScheduleView({ courses, meetings, exams, onCoursesChange
   const [schoolUsername, setSchoolUsername] = useState('');
   const [schoolPassword, setSchoolPassword] = useState('');
   const [loginLoading, setLoginLoading] = useState(false);
+  const [showSupportedSchools, setShowSupportedSchools] = useState(false);
+
+  // 已支持的高校列表
+  const supportedSchools = [
+    '北京大学',
+    '清华大学',
+    '南京审计大学',
+    '北京工商大学',
+    '南京大学',
+    '复旦大学'
+  ];
 
   const handleImport = () => {
     setShowSchoolLogin(true);
@@ -484,7 +495,29 @@ export default function ScheduleView({ courses, meetings, exams, onCoursesChange
       {/* School Login Form */}
       {showSchoolLogin && (
         <div className="bg-white rounded-2xl border border-[oklch(0.87_0.02_240)] shadow-sm p-6">
-          <h3 className="font-bold text-[oklch(0.12_0.025_240)] mb-4 font-serif">学校信息门户登录</h3>
+          <div className="flex items-center justify-between mb-4">
+            <h3 className="font-bold text-[oklch(0.12_0.025_240)] font-serif">学校信息门户登录</h3>
+            <button 
+              onClick={() => setShowSupportedSchools(!showSupportedSchools)}
+              className="text-sm text-[oklch(0.28_0.07_240)] hover:text-[oklch(0.32_0.07_240)] font-medium"
+            >
+              {showSupportedSchools ? '隐藏支持的高校' : '查看支持的高校'}
+            </button>
+          </div>
+          
+          {showSupportedSchools && (
+            <div className="mb-4 p-3 bg-[oklch(0.955_0.008_240)] border border-[oklch(0.87_0.02_240)] rounded-xl">
+              <h4 className="text-sm font-semibold text-[oklch(0.12_0.025_240)] mb-2">已支持的高校：</h4>
+              <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
+                {supportedSchools.map((school, index) => (
+                  <div key={index} className="text-xs text-[oklch(0.48_0.05_240)]">
+                    • {school}
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+          
           <form onSubmit={handleSchoolLogin} className="space-y-4">
             <div>
               <label className="block text-xs font-medium text-[oklch(0.12_0.025_240)] mb-1">学校名称 *</label>
