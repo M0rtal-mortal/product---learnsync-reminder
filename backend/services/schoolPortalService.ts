@@ -218,7 +218,7 @@ export class SchoolPortalService {
     } catch (error) {
       console.error('提取课程信息失败:', error);
       // 如果提取失败，返回示例课程
-      return this.generateSampleCourses();
+      return this.generateSampleCourses(school);
     }
   }
   
@@ -297,7 +297,7 @@ export class SchoolPortalService {
         // 周四课程
         { id: Date.now().toString() + '8', name: 'NET编程', teacher: '韩冰青', location: '竞秀南楼401', dayOfWeek: 3, startTime: '10:00', endTime: '11:20', color: 'primary', isImported: true, semester, createdAt: new Date().toISOString(), updatedAt: new Date().toISOString() },
         { id: Date.now().toString() + '9', name: '就业指导课', teacher: '蒋鑫', location: '竞秀北楼107', dayOfWeek: 3, startTime: '13:30', endTime: '15:00', color: 'secondary', isImported: true, semester, createdAt: new Date().toISOString(), updatedAt: new Date().toISOString() },
-        { id: Date.now().toString() + '10', name: '舞蹈鉴赏', teacher: '刘建姝', location: '敏达楼208', dayOfWeek: 3, startTime: '13:30', endTime: '15:00', color: 'primary', isImported: true, semester, createdAt: new Date().toISOString(), updatedAt: new Date().toISOString() },
+        { id: Date.now().toString() + '10', name: '舞蹈鉴赏', teacher: '刘建姝', location: '敏达楼208', dayOfWeek: 4, startTime: '13:30', endTime: '15:00', color: 'primary', isImported: true, semester, createdAt: new Date().toISOString(), updatedAt: new Date().toISOString() },
         { id: Date.now().toString() + '11', name: '计算机网络', teacher: '吕从东', location: '竞秀南楼302', dayOfWeek: 3, startTime: '18:30', endTime: '20:10', color: 'secondary', isImported: true, semester, createdAt: new Date().toISOString(), updatedAt: new Date().toISOString() },
         // 周五课程
         { id: Date.now().toString() + '12', name: '软件工程与方法', teacher: '沈虹', location: '竞慧楼东楼201', dayOfWeek: 4, startTime: '10:00', endTime: '11:20', color: 'secondary', isImported: true, semester, createdAt: new Date().toISOString(), updatedAt: new Date().toISOString(), weekType: 'single' },
