@@ -27,6 +27,7 @@ export interface Course {
   semester: string;
   createdAt: string;
   updatedAt: string;
+  weekType?: 'single' | 'double'; // 单周或双周
 }
 
 export interface CreateCourseInput {

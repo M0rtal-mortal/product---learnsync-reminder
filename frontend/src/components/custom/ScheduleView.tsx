@@ -11,6 +11,10 @@ const COLOR_MAP: Record<string, string> = {
   success: 'bg-green-50 text-green-700',
   accent: 'bg-amber-50 text-amber-700',
   error: 'bg-red-50 text-red-600',
+  'primary-single': 'bg-[oklch(0.28_0.07_240)]/20 text-[oklch(0.28_0.07_240)] font-medium',
+  'primary-double': 'bg-[oklch(0.28_0.07_240)]/5 text-[oklch(0.28_0.07_240)]',
+  'secondary-single': 'bg-[oklch(0.42_0.09_240)]/20 text-[oklch(0.42_0.09_240)] font-medium',
+  'secondary-double': 'bg-[oklch(0.42_0.09_240)]/5 text-[oklch(0.42_0.09_240)]',
 };
 
 const timeToMinutes = (t: string) => {
@@ -55,15 +59,16 @@ export default function ScheduleView({ courses, meetings, exams, onCoursesChange
     name: '', teacher: '', location: '', dayOfWeek: 0, startTime: '08:00', endTime: '09:40', color: 'primary',
   });
   const [editCourse, setEditCourse] = useState({
-    name: '', teacher: '', location: '', dayOfWeek: 0, startTime: '08:00', endTime: '09:40', color: 'primary',
+    name: '', teacher: '', location: '', dayOfWeek: 0, startTime: '08:00', endTime: '09:40', color: 'primary', weekType: undefined as 'single' | 'double' | undefined,
   });
 
   // Build schedule events for conflict detection
-  const scheduleEvents: ScheduleEvent[] = useMemo(() => [
+  const scheduleEvents: (ScheduleEvent & { weekType?: 'single' | 'double' })[] = useMemo(() => [
     ...courses.map(c => ({
       id: c.id, title: c.name, type: 'course' as const,
       dayOfWeek: c.dayOfWeek, startTime: c.startTime, endTime: c.endTime,
       location: c.location, color: c.color,
+      weekType: c.weekType,
     })),
     ...meetings.filter(m => m.status === 'active').map(m => {
       const date = new Date(m.meetingDate);
@@ -185,6 +190,7 @@ export default function ScheduleView({ courses, meetings, exams, onCoursesChange
       startTime: course.startTime,
       endTime: course.endTime,
       color: course.color,
+      weekType: course.weekType,
     });
     setShowEditCourse(true);
   };
@@ -211,6 +217,15 @@ export default function ScheduleView({ courses, meetings, exams, onCoursesChange
   const today = new Date();
   const todayDow = (today.getDay() + 6) % 7;
 
+  // Get current week number (1-based)
+  const getWeekNumber = (date: Date) => {
+    const firstDayOfYear = new Date(date.getFullYear(), 0, 1);
+    const pastDaysOfYear = (date.getTime() - firstDayOfYear.getTime()) / 86400000;
+    return Math.ceil((pastDaysOfYear + firstDayOfYear.getDay() + 1) / 7);
+  };
+  const currentWeek = getWeekNumber(today);
+  const isSingleWeek = currentWeek % 2 === 1;
+
   // Get week start date
   const weekStart = new Date(today);
   weekStart.setDate(today.getDate() - todayDow + currentWeekOffset * 7);
@@ -227,9 +242,21 @@ export default function ScheduleView({ courses, meetings, exams, onCoursesChange
     return `${start.getFullYear()}年${start.getMonth() + 1}月${start.getDate()}日 — ${end.getMonth() + 1}月${end.getDate()}日`;
   };
 
-  const getEventsForDay = (dow: number) => scheduleEvents.filter(e => e.dayOfWeek === dow);
+  const getEventsForDay = (dow: number) => {
+    return scheduleEvents.filter(e => {
+      if (e.dayOfWeek !== dow) return false;
+      // Filter by week type
+      if (!e.weekType) return true;
+      return e.weekType === 'single' ? isSingleWeek : !isSingleWeek;
+    });
+  };
 
-  const todayCourses = courses.filter(c => c.dayOfWeek === todayDow);
+  const todayCourses = courses.filter(c => {
+    if (c.dayOfWeek !== todayDow) return false;
+    // Filter by week type
+    if (!c.weekType) return true;
+    return c.weekType === 'single' ? isSingleWeek : !isSingleWeek;
+  });
   const todayMeetings = meetings.filter(m => {
     const d = new Date(m.meetingDate);
     return d.toDateString() === today.toDateString() && m.status === 'active';
@@ -382,16 +409,22 @@ export default function ScheduleView({ courses, meetings, exams, onCoursesChange
                   <div key={dow} className="space-y-1">
                     {dayEvents.map(ev => {
                       const hasConflict = conflictIds.has(ev.id);
+                      let colorClass = COLOR_MAP.primary;
+                      if (ev.type === 'meeting') {
+                        colorClass = COLOR_MAP.success;
+                      } else if (ev.color && ev.weekType) {
+                        colorClass = COLOR_MAP[`${ev.color}-${ev.weekType}`] || COLOR_MAP[ev.color] || COLOR_MAP.primary;
+                      } else if (ev.color) {
+                        colorClass = COLOR_MAP[ev.color] || COLOR_MAP.primary;
+                      }
                       return (
                         <div key={ev.id} className={`rounded-lg p-2 text-xs ${
                           hasConflict
                             ? 'bg-red-50 text-red-700'
-                            : ev.type === 'meeting'
-                            ? 'bg-green-50 text-green-700'
-                            : COLOR_MAP[ev.color || 'primary'] || COLOR_MAP.primary
+                            : colorClass
                         }`}>
                           <p className="font-semibold leading-tight truncate">{hasConflict ? '⚠ ' : ''}{ev.title}</p>
-                          <p className="text-[10px] opacity-70 mt-0.5">{ev.startTime}{hasConflict ? ' 冲突' : ''}</p>
+                          <p className="text-[10px] opacity-70 mt-0.5">{ev.startTime}{hasConflict ? ' 冲突' : ev.weekType ? ` ${ev.weekType === 'single' ? '单周' : '双周'}` : ''}</p>
                         </div>
                       );
                     })}
@@ -474,34 +507,45 @@ export default function ScheduleView({ courses, meetings, exams, onCoursesChange
           </div>
         ) : (
           <div className="divide-y divide-[oklch(0.87_0.02_240)]">
-            {courses.map(course => (
-              <div key={course.id} className="flex items-center gap-4 px-6 py-3 hover:bg-[oklch(0.955_0.008_240)] transition-colors group">
-                <div className={`w-2 h-2 rounded-full flex-shrink-0 ${
-                  course.color === 'secondary' ? 'bg-[oklch(0.42_0.09_240)]' : 'bg-[oklch(0.28_0.07_240)]'
-                }`} />
-                <div className="flex-1 min-w-0">
-                  <p className="text-sm font-semibold text-[oklch(0.12_0.025_240)] truncate">{course.name}</p>
-                  <p className="text-xs text-[oklch(0.48_0.05_240)]">{DAY_LABELS[course.dayOfWeek]} {course.startTime}–{course.endTime} · {course.location || '未设置地点'}</p>
+            {courses.map(course => {
+              let weekTypeText = '';
+              if (course.weekType) {
+                weekTypeText = course.weekType === 'single' ? '单周' : '双周';
+              }
+              let bgClass = '';
+              if (course.weekType) {
+                bgClass = course.weekType === 'single' ? 'bg-[oklch(0.28_0.07_240)]/5' : 'bg-[oklch(0.28_0.07_240)]/2';
+              }
+              return (
+                <div key={course.id} className={`flex items-center gap-4 px-6 py-3 hover:bg-[oklch(0.955_0.008_240)] transition-colors group ${bgClass}`}>
+                  <div className={`w-2 h-2 rounded-full flex-shrink-0 ${
+                    course.color === 'secondary' ? 'bg-[oklch(0.42_0.09_240)]' : 'bg-[oklch(0.28_0.07_240)]'
+                  }`} />
+                  <div className="flex-1 min-w-0">
+                    <p className="text-sm font-semibold text-[oklch(0.12_0.025_240)] truncate">{course.name}</p>
+                    <p className="text-xs text-[oklch(0.48_0.05_240)]">{DAY_LABELS[course.dayOfWeek]} {course.startTime}–{course.endTime} · {course.location || '未设置地点'}{weekTypeText ? ` · ${weekTypeText}` : ''}</p>
+                  </div>
+                  {course.teacher && <span className="text-xs text-[oklch(0.48_0.05_240)] hidden sm:block">{course.teacher}</span>}
+                  {course.isImported && <span className="text-xs bg-[oklch(0.28_0.07_240)]/10 text-[oklch(0.28_0.07_240)] px-2 py-0.5 rounded-full">已导入</span>}
+                  {course.weekType && <span className="text-xs bg-[oklch(0.78_0.15_75)]/20 text-[oklch(0.78_0.15_75)] px-2 py-0.5 rounded-full">{weekTypeText}</span>}
+                  <div className="flex items-center gap-1">
+                    <button
+                      onClick={() => handleEditCourse(course)}
+                      className="opacity-70 hover:opacity-100 p-1.5 hover:bg-[oklch(0.28_0.07_240)]/10 rounded-lg transition-all text-[oklch(0.28_0.07_240)]"
+                    >
+                      <Edit2 className="w-3.5 h-3.5" />
+                    </button>
+                    <button
+                      onClick={() => handleDeleteCourse(course.id)}
+                      disabled={deletingId === course.id}
+                      className="opacity-70 hover:opacity-100 p-1.5 hover:bg-red-50 rounded-lg transition-all text-red-500 disabled:opacity-50"
+                    >
+                      <Trash2 className="w-3.5 h-3.5" />
+                    </button>
+                  </div>
                 </div>
-                {course.teacher && <span className="text-xs text-[oklch(0.48_0.05_240)] hidden sm:block">{course.teacher}</span>}
-                {course.isImported && <span className="text-xs bg-[oklch(0.28_0.07_240)]/10 text-[oklch(0.28_0.07_240)] px-2 py-0.5 rounded-full">已导入</span>}
-                <div className="flex items-center gap-1">
-                  <button
-                    onClick={() => handleEditCourse(course)}
-                    className="opacity-0 group-hover:opacity-100 p-1.5 hover:bg-[oklch(0.28_0.07_240)]/10 rounded-lg transition-all text-[oklch(0.28_0.07_240)]"
-                  >
-                    <Edit2 className="w-3.5 h-3.5" />
-                  </button>
-                  <button
-                    onClick={() => handleDeleteCourse(course.id)}
-                    disabled={deletingId === course.id}
-                    className="opacity-0 group-hover:opacity-100 p-1.5 hover:bg-red-50 rounded-lg transition-all text-red-500 disabled:opacity-50"
-                  >
-                    <Trash2 className="w-3.5 h-3.5" />
-                  </button>
-                </div>
-              </div>
-            ))}
+              );
+            })}
           </div>
         )}
       </div>
@@ -598,6 +642,15 @@ export default function ScheduleView({ courses, meetings, exams, onCoursesChange
               <label className="block text-xs font-medium text-[oklch(0.12_0.025_240)] mb-1">结束时间</label>
               <input type="time" value={editCourse.endTime} onChange={e => setEditCourse(p => ({ ...p, endTime: e.target.value }))}
                 className="w-full px-3 py-2 bg-[oklch(0.955_0.008_240)] border border-[oklch(0.87_0.02_240)] rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-[oklch(0.28_0.07_240)]/30 focus:border-[oklch(0.28_0.07_240)] transition-all" />
+            </div>
+            <div>
+              <label className="block text-xs font-medium text-[oklch(0.12_0.025_240)] mb-1">周类型</label>
+              <select value={editCourse.weekType || ''} onChange={e => setEditCourse(p => ({ ...p, weekType: e.target.value as 'single' | 'double' | undefined }))}
+                className="w-full px-3 py-2 bg-[oklch(0.955_0.008_240)] border border-[oklch(0.87_0.02_240)] rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-[oklch(0.28_0.07_240)]/30 focus:border-[oklch(0.28_0.07_240)] transition-all">
+                <option value="">全部周</option>
+                <option value="single">单周</option>
+                <option value="double">双周</option>
+              </select>
             </div>
             <div className="sm:col-span-2 flex gap-3 justify-end">
               <button type="button" onClick={() => setShowEditCourse(false)}
