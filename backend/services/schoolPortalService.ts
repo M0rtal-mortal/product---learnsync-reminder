@@ -281,7 +281,35 @@ export class SchoolPortalService {
         { id: Date.now().toString() + '11', name: '体育', teacher: '周教授', location: '体育馆', dayOfWeek: 0, startTime: '16:00', endTime: '17:40', color: 'primary', isImported: true, semester, createdAt: new Date().toISOString(), updatedAt: new Date().toISOString() },
         { id: Date.now().toString() + '12', name: '离散数学', teacher: '吴教授', location: '理科楼301', dayOfWeek: 2, startTime: '16:00', endTime: '17:40', color: 'secondary', isImported: true, semester, createdAt: new Date().toISOString(), updatedAt: new Date().toISOString() },
       ];
-    } else if (school.includes('南京审计大学') || school.includes('上海财经大学') || school.includes('中央财经大学') || school.includes('对外经济贸易大学')) {
+    } else if (school.includes('南京审计大学')) {
+      return [
+        // 周一课程
+        { id: Date.now().toString() + '1', name: 'NET编程', teacher: '张教授', location: '竞秀楼南楼301', dayOfWeek: 0, startTime: '10:00', endTime: '11:40', color: 'primary', isImported: true, semester, createdAt: new Date().toISOString(), updatedAt: new Date().toISOString() },
+        { id: Date.now().toString() + '2', name: '创业基础', teacher: '李教授', location: '竞秀楼北楼401', dayOfWeek: 0, startTime: '14:00', endTime: '16:30', color: 'secondary', isImported: true, semester, createdAt: new Date().toISOString(), updatedAt: new Date().toISOString() },
+        { id: Date.now().toString() + '3', name: '创业基础', teacher: '李教授', location: '竞秀楼北楼501', dayOfWeek: 0, startTime: '16:40', endTime: '18:20', color: 'secondary', isImported: true, semester, createdAt: new Date().toISOString(), updatedAt: new Date().toISOString() },
+        { id: Date.now().toString() + '4', name: '毛泽东思想和中国特色社会主义理论体系概论', teacher: '王教授', location: '敏知楼101', dayOfWeek: 0, startTime: '19:30', endTime: '21:10', color: 'primary', isImported: true, semester, createdAt: new Date().toISOString(), updatedAt: new Date().toISOString() },
+        // 周二课程
+        { id: Date.now().toString() + '5', name: 'python程序设计', teacher: '陈教授', location: '竞秀楼东楼104', dayOfWeek: 1, startTime: '08:00', endTime: '09:40', color: 'primary', isImported: true, semester, createdAt: new Date().toISOString(), updatedAt: new Date().toISOString() },
+        { id: Date.now().toString() + '6', name: '软件工程与方法', teacher: '刘教授', location: '竞秀楼北楼507', dayOfWeek: 1, startTime: '10:00', endTime: '11:40', color: 'secondary', isImported: true, semester, createdAt: new Date().toISOString(), updatedAt: new Date().toISOString() },
+        { id: Date.now().toString() + '7', name: '台球', teacher: '赵教授', location: '体育健身中心129', dayOfWeek: 1, startTime: '14:00', endTime: '16:30', color: 'primary', isImported: true, semester, createdAt: new Date().toISOString(), updatedAt: new Date().toISOString() },
+        { id: Date.now().toString() + '8', name: '计算机审计', teacher: '钱教授', location: '竞秀楼东楼101', dayOfWeek: 1, startTime: '16:40', endTime: '18:20', color: 'secondary', isImported: true, semester, createdAt: new Date().toISOString(), updatedAt: new Date().toISOString() },
+        // 周三课程
+        { id: Date.now().toString() + '9', name: 'NET编程', teacher: '张教授', location: '竞秀楼南楼401', dayOfWeek: 2, startTime: '10:00', endTime: '11:40', color: 'primary', isImported: true, semester, createdAt: new Date().toISOString(), updatedAt: new Date().toISOString() },
+        { id: Date.now().toString() + '10', name: '就业指导课', teacher: '孙教授', location: '竞秀楼北楼107', dayOfWeek: 2, startTime: '14:00', endTime: '16:30', color: 'secondary', isImported: true, semester, createdAt: new Date().toISOString(), updatedAt: new Date().toISOString() },
+        // 周四课程
+        { id: Date.now().toString() + '11', name: '软件工程与方法', teacher: '刘教授', location: '竞秀楼东楼201', dayOfWeek: 3, startTime: '10:00', endTime: '11:40', color: 'secondary', isImported: true, semester, createdAt: new Date().toISOString(), updatedAt: new Date().toISOString() },
+        { id: Date.now().toString() + '12', name: '习近平新时代中国特色社会主义思想概论', teacher: '周教授', location: '敏知楼203', dayOfWeek: 3, startTime: '14:00', endTime: '16:30', color: 'primary', isImported: true, semester, createdAt: new Date().toISOString(), updatedAt: new Date().toISOString() },
+        { id: Date.now().toString() + '13', name: '计算机网络', teacher: '吴教授', location: '竞秀楼南楼302', dayOfWeek: 3, startTime: '19:30', endTime: '21:10', color: 'secondary', isImported: true, semester, createdAt: new Date().toISOString(), updatedAt: new Date().toISOString() },
+        // 周五课程
+        { id: Date.now().toString() + '14', name: 'python程序设计', teacher: '陈教授', location: '竞秀楼东楼105', dayOfWeek: 4, startTime: '08:00', endTime: '09:40', color: 'primary', isImported: true, semester, createdAt: new Date().toISOString(), updatedAt: new Date().toISOString() },
+        { id: Date.now().toString() + '15', name: '舞蹈鉴赏', teacher: '郑教授', location: '敏达楼208', dayOfWeek: 4, startTime: '14:00', endTime: '16:30', color: 'secondary', isImported: true, semester, createdAt: new Date().toISOString(), updatedAt: new Date().toISOString() },
+        { id: Date.now().toString() + '16', name: 'Java综合实训', teacher: '王教授', location: '竞秀楼南楼54', dayOfWeek: 4, startTime: '16:40', endTime: '18:20', color: 'primary', isImported: true, semester, createdAt: new Date().toISOString(), updatedAt: new Date().toISOString() },
+        // 周六课程
+        { id: Date.now().toString() + '17', name: '数据结构课程设计', teacher: '陈教授', location: '竞秀楼南楼5', dayOfWeek: 5, startTime: '08:00', endTime: '09:40', color: 'primary', isImported: true, semester, createdAt: new Date().toISOString(), updatedAt: new Date().toISOString() },
+        { id: Date.now().toString() + '18', name: 'Java综合实训', teacher: '王教授', location: '竞秀楼南楼54', dayOfWeek: 5, startTime: '10:00', endTime: '11:40', color: 'primary', isImported: true, semester, createdAt: new Date().toISOString(), updatedAt: new Date().toISOString() },
+        { id: Date.now().toString() + '19', name: '工程项目认知', teacher: '刘教授', location: '竞秀楼南楼3', dayOfWeek: 5, startTime: '14:00', endTime: '16:30', color: 'secondary', isImported: true, semester, createdAt: new Date().toISOString(), updatedAt: new Date().toISOString() },
+      ];
+    } else if (school.includes('上海财经大学') || school.includes('中央财经大学') || school.includes('对外经济贸易大学')) {
       return [
         { id: Date.now().toString() + '1', name: '高等数学', teacher: '张教授', location: '教学楼A101', dayOfWeek: 0, startTime: '08:00', endTime: '09:40', color: 'primary', isImported: true, semester, createdAt: new Date().toISOString(), updatedAt: new Date().toISOString() },
         { id: Date.now().toString() + '2', name: '大学英语', teacher: '李教授', location: '教学楼B201', dayOfWeek: 0, startTime: '14:00', endTime: '15:40', color: 'secondary', isImported: true, semester, createdAt: new Date().toISOString(), updatedAt: new Date().toISOString() },
