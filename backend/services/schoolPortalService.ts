@@ -281,7 +281,7 @@ export class SchoolPortalService {
         { id: Date.now().toString() + '11', name: '体育', teacher: '周教授', location: '体育馆', dayOfWeek: 0, startTime: '16:00', endTime: '17:40', color: 'primary', isImported: true, semester, createdAt: new Date().toISOString(), updatedAt: new Date().toISOString() },
         { id: Date.now().toString() + '12', name: '离散数学', teacher: '吴教授', location: '理科楼301', dayOfWeek: 2, startTime: '16:00', endTime: '17:40', color: 'secondary', isImported: true, semester, createdAt: new Date().toISOString(), updatedAt: new Date().toISOString() },
       ];
-    } else if (school.includes('南京审计大学')) {
+    } else if (school.includes('南京审计大学') || school.includes('上海财经大学') || school.includes('中央财经大学') || school.includes('对外经济贸易大学')) {
       return [
         { id: Date.now().toString() + '1', name: '高等数学', teacher: '张教授', location: '教学楼A101', dayOfWeek: 0, startTime: '08:00', endTime: '09:40', color: 'primary', isImported: true, semester, createdAt: new Date().toISOString(), updatedAt: new Date().toISOString() },
         { id: Date.now().toString() + '2', name: '大学英语', teacher: '李教授', location: '教学楼B201', dayOfWeek: 0, startTime: '14:00', endTime: '15:40', color: 'secondary', isImported: true, semester, createdAt: new Date().toISOString(), updatedAt: new Date().toISOString() },
