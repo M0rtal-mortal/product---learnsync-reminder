@@ -61,7 +61,21 @@ export class SchoolPortalService {
       '清华大学': 'https://info.tsinghua.edu.cn',
       '北京工商大学': 'https://portal.btbu.edu.cn',
       '南京大学': 'https://my.nju.edu.cn',
-      '复旦大学': 'https://i.fudan.edu.cn'
+      '复旦大学': 'https://i.fudan.edu.cn',
+      '上海交通大学': 'https://my.sjtu.edu.cn',
+      '浙江大学': 'https://zju.edu.cn',
+      '中国人民大学': 'https://portal.ruc.edu.cn',
+      '上海财经大学': 'https://my.sufe.edu.cn',
+      '中央财经大学': 'https://my.cufe.edu.cn',
+      '对外经济贸易大学': 'https://portal.uibe.edu.cn',
+      '南开大学': 'https://my.nankai.edu.cn',
+      '武汉大学': 'https://my.whu.edu.cn',
+      '华中科技大学': 'https://my.hust.edu.cn',
+      '中山大学': 'https://my.sysu.edu.cn',
+      '华南理工大学': 'https://my.scut.edu.cn',
+      '西安交通大学': 'https://my.xjtu.edu.cn',
+      '哈尔滨工业大学': 'https://my.hit.edu.cn',
+      '同济大学': 'https://my.tongji.edu.cn'
     };
     
     return schoolPortalMap[school] || `https://portal.${school.replace(/\s+/g, '')}.edu.cn`;
