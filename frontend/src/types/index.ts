@@ -188,4 +188,4 @@ export interface ConflictPair {
   dayOfWeek: number;
 }
 
-export type ViewType = 'dashboard' | 'schedule' | 'exams' | 'meetings' | 'notifications';
+export type ViewType = 'dashboard' | 'schedule' | 'exams' | 'meetings' | 'notifications' | 'account';

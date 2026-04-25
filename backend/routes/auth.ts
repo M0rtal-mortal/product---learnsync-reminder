@@ -145,6 +145,63 @@ const getCurrentUser = (req: Request, res: Response, next: NextFunction) => {
   }
 };
 
+// Update user profile
+const updateUserProfile = async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    // Extract token from header
+    const authHeader = req.headers.authorization;
+    if (!authHeader) {
+      throw new AppError(AUTH_ERRORS.UNAUTHORIZED, 401);
+    }
+
+    const token = authHeader.split(' ')[1];
+    if (!token) {
+      throw new AppError(AUTH_ERRORS.UNAUTHORIZED, 401);
+    }
+
+    // Verify token
+    const jwtSecret = JWT_CONFIG.SECRET || JWT_CONFIG.FALLBACK_SECRET;
+    const decoded = jwt.verify(token, jwtSecret) as any;
+
+    // Find user
+    const userIndex = users.findIndex(u => u.id === decoded.userId);
+    if (userIndex === -1) {
+      throw new AppError(AUTH_ERRORS.UNAUTHORIZED, 401);
+    }
+
+    const { name, password, currentPassword } = req.body;
+
+    // Update user information
+    if (name) {
+      users[userIndex].name = name;
+    }
+
+    if (password && currentPassword) {
+      // Verify current password
+      const isValidPassword = await bcrypt.compare(currentPassword, users[userIndex].password);
+      if (!isValidPassword) {
+        throw new AppError('Current password is incorrect', 401);
+      }
+
+      // Hash new password
+      const hashedPassword = await bcrypt.hash(password, 10);
+      users[userIndex].password = hashedPassword;
+    }
+
+    users[userIndex].updatedAt = new Date().toISOString();
+
+    res.json({
+      success: true,
+      data: {
+        message: 'Profile updated successfully',
+        user: sanitizeUser(users[userIndex]),
+      },
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
 // Helper functions
 const generateToken = (user: any) => {
   const jwtSecret = JWT_CONFIG.SECRET || JWT_CONFIG.FALLBACK_SECRET;
@@ -163,5 +220,6 @@ const sanitizeUser = (user: any) => ({
 router.post('/signup', signupHandler);
 router.post('/login', loginHandler);
 router.get('/me', getCurrentUser);
+router.put('/profile', updateUserProfile);
 
 export default router;

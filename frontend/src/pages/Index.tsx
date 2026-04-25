@@ -7,10 +7,10 @@ import ScheduleView from '@/components/custom/ScheduleView';
 import ExamView from '@/components/custom/ExamView';
 import MeetingView from '@/components/custom/MeetingView';
 import NotificationView from '@/components/custom/NotificationView';
-import { coursesApi, examsApi, meetingsApi, notificationsApi } from '@/lib/api';
+import { coursesApi, examsApi, meetingsApi, notificationsApi, authApi } from '@/lib/api';
 import type { Course, Exam, Meeting, Notification, ViewType } from '@/types';
 import {
-  CalendarDays, BookOpen, Users, Bell, LayoutDashboard,
+  CalendarDays, BookOpen, Users, Bell, LayoutDashboard, User,
   Menu, X, LogOut, RefreshCw, AlertTriangle, ChevronRight, Plus,
 } from 'lucide-react';
 import { toast } from 'sonner';
@@ -21,6 +21,7 @@ const NAV_ITEMS: { id: ViewType; label: string; icon: React.ReactNode }[] = [
   { id: 'exams', label: '考试提醒', icon: <BookOpen className="w-5 h-5" /> },
   { id: 'meetings', label: '会议管理', icon: <Users className="w-5 h-5" /> },
   { id: 'notifications', label: '通知设置', icon: <Bell className="w-5 h-5" /> },
+  { id: 'account', label: '账号管理', icon: <User className="w-5 h-5" /> },
 ];
 
 const DAY_LABELS = ['周一', '周二', '周三', '周四', '周五', '周六', '周日'];
@@ -44,20 +45,32 @@ export default function Index() {
   const [showPrivacyPolicy, setShowPrivacyPolicy] = useState(false);
   const [showTermsOfService, setShowTermsOfService] = useState(false);
   const [showHelpCenter, setShowHelpCenter] = useState(false);
+  const [userName, setUserName] = useState('用户');
+  const [userPassword, setUserPassword] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
+  const [saving, setSaving] = useState(false);
+  const [changingPassword, setChangingPassword] = useState(false);
+  const [user, setUser] = useState<any>(null);
 
   const fetchAll = useCallback(async () => {
     try {
-      const [cRes, eRes, mRes, nRes] = await Promise.all([
+      const [cRes, eRes, mRes, nRes, userRes] = await Promise.all([
         coursesApi.getAll(),
         examsApi.getAll(),
         meetingsApi.getAll(),
         notificationsApi.getAll(),
+        authApi.me(),
       ]);
       if (cRes.success) setCourses(cRes.data);
       if (eRes.success) setExams(eRes.data);
       if (mRes.success) setMeetings(mRes.data);
       if (nRes.success) setNotifications(nRes.data);
-    } catch {
+      if (userRes.success && userRes.data?.user) {
+        setUser(userRes.data.user);
+        setUserName(userRes.data.user.name || '用户');
+      }
+    } catch (error) {
+      console.error('获取数据失败:', error);
       toast.error('数据加载失败');
     } finally {
       setLoading(false);
@@ -938,6 +951,157 @@ export default function Index() {
 
             {currentView === 'notifications' && (
               <NotificationView notifications={notifications} onNotificationsChange={fetchAll} />
+            )}
+
+            {currentView === 'account' && (
+              <div className="bg-white rounded-2xl border border-[oklch(0.87_0.02_240)] shadow-sm overflow-hidden">
+                <div className="px-6 py-4 border-b border-[oklch(0.87_0.02_240)]">
+                  <h3 className="font-serif font-bold text-[oklch(0.12_0.025_240)]">账号管理</h3>
+                </div>
+                <div className="p-6 space-y-6">
+                  <div className="space-y-4">
+                    <div>
+                      <label className="block text-sm font-medium text-[oklch(0.48_0.05_240)] mb-1">昵称</label>
+                      <div className="flex gap-2">
+                        <input 
+                          type="text" 
+                          value={userName} 
+                          onChange={(e) => setUserName(e.target.value)}
+                          className="flex-1 border border-[oklch(0.87_0.02_240)] rounded-xl px-4 py-2 focus:outline-none focus:ring-2 focus:ring-[oklch(0.78_0.15_75)] focus:border-transparent"
+                        />
+                        <button 
+                          onClick={async () => {
+                            const token = localStorage.getItem('token');
+                            if (!token) {
+                              toast.error('请先登录');
+                              return;
+                            }
+                            setSaving(true);
+                            try {
+                              const res = await authApi.updateProfile({ name: userName });
+                              if (res.success) {
+                                toast.success('昵称保存成功');
+                                // 更新本地用户信息
+                                if (res.data?.user) {
+                                  setUser(res.data.user);
+                                }
+                              } else {
+                                toast.error(res.message || '保存失败，请稍后重试');
+                              }
+                            } catch (error: any) {
+                              toast.error(error.message || '保存失败，请稍后重试');
+                            } finally {
+                              setSaving(false);
+                            }
+                          }}
+                          disabled={saving}
+                          className="px-4 py-2 bg-[oklch(0.78_0.15_75)] hover:bg-[oklch(0.72_0.15_75)] text-[oklch(0.22_0.06_240)] font-semibold rounded-xl transition-colors disabled:opacity-60 disabled:cursor-not-allowed"
+                        >
+                          {saving ? '保存中...' : '保存'}
+                        </button>
+                      </div>
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-[oklch(0.48_0.05_240)] mb-1">邮箱</label>
+                      <input 
+                        type="email" 
+                        defaultValue="3762164771@qq.com" 
+                        disabled 
+                        className="w-full border border-[oklch(0.87_0.02_240)] rounded-xl px-4 py-2 bg-[oklch(0.955_0.008_240)] text-[oklch(0.48_0.05_240)]"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-[oklch(0.48_0.05_240)] mb-1">当前密码</label>
+                      <input 
+                        type="password" 
+                        placeholder="请输入当前密码"
+                        className="w-full border border-[oklch(0.87_0.02_240)] rounded-xl px-4 py-2 mb-3 focus:outline-none focus:ring-2 focus:ring-[oklch(0.78_0.15_75)] focus:border-transparent"
+                        id="currentPassword"
+                      />
+                      <label className="block text-sm font-medium text-[oklch(0.48_0.05_240)] mb-1">新密码</label>
+                      <div className="flex items-center gap-2">
+                        <div className="relative flex-1">
+                          <input 
+                            type={showPassword ? 'text' : 'password'} 
+                            value={userPassword} 
+                            onChange={(e) => setUserPassword(e.target.value)}
+                            placeholder="请输入新密码"
+                            className="w-full border border-[oklch(0.87_0.02_240)] rounded-xl px-4 py-2 focus:outline-none focus:ring-2 focus:ring-[oklch(0.78_0.15_75)] focus:border-transparent"
+                          />
+                          <button 
+                            className="absolute right-3 top-1/2 transform -translate-y-1/2 text-[oklch(0.48_0.05_240)] hover:text-[oklch(0.28_0.07_240)] transition-colors"
+                            onClick={(e) => {
+                              e.preventDefault();
+                              setShowPassword(!showPassword);
+                            }}
+                          >
+                            {showPassword ? '👁️' : '👁️'}
+                          </button>
+                        </div>
+                        <button 
+                          onClick={async () => {
+                            const currentPassword = (document.getElementById('currentPassword') as HTMLInputElement).value;
+                            if (!currentPassword) {
+                              toast.error('请输入当前密码');
+                              return;
+                            }
+                            if (!userPassword) {
+                              toast.error('请输入新密码');
+                              return;
+                            }
+                            setChangingPassword(true);
+                            try {
+                              const res = await authApi.updateProfile({ 
+                                password: userPassword, 
+                                currentPassword 
+                              });
+                              if (res.success) {
+                                toast.success('密码修改成功');
+                                // 清空输入框
+                                (document.getElementById('currentPassword') as HTMLInputElement).value = '';
+                                setUserPassword('');
+                              } else {
+                                toast.error(res.message || '修改失败，请稍后重试');
+                              }
+                            } catch (error: any) {
+                              toast.error(error.response?.data?.message || '修改失败，请稍后重试');
+                            } finally {
+                              setChangingPassword(false);
+                            }
+                          }}
+                          disabled={changingPassword}
+                          className="px-4 py-2 bg-[oklch(0.78_0.15_75)] hover:bg-[oklch(0.72_0.15_75)] text-[oklch(0.22_0.06_240)] font-semibold rounded-xl transition-colors disabled:opacity-60 disabled:cursor-not-allowed"
+                        >
+                          {changingPassword ? '修改中...' : '修改'}
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                  <div className="border-t border-[oklch(0.87_0.02_240)] pt-6">
+                    <h4 className="font-semibold text-[oklch(0.12_0.025_240)] mb-4">安全设置</h4>
+                    <div className="space-y-4">
+                      <div className="flex items-center justify-between">
+                        <div>
+                          <p className="text-sm font-medium text-[oklch(0.12_0.025_240)]">两步验证</p>
+                          <p className="text-xs text-[oklch(0.48_0.05_240)]">提高账号安全性</p>
+                        </div>
+                        <button className="px-4 py-1.5 bg-[oklch(0.28_0.07_240)] hover:bg-[oklch(0.35_0.08_240)] text-white text-sm font-medium rounded-xl transition-colors">
+                          开启
+                        </button>
+                      </div>
+                      <div className="flex items-center justify-between">
+                        <div>
+                          <p className="text-sm font-medium text-[oklch(0.12_0.025_240)]">登录设备管理</p>
+                          <p className="text-xs text-[oklch(0.48_0.05_240)]">查看并管理登录设备</p>
+                        </div>
+                        <button className="px-4 py-1.5 bg-white border border-[oklch(0.87_0.02_240)] hover:bg-[oklch(0.955_0.008_240)] text-[oklch(0.28_0.07_240)] text-sm font-medium rounded-xl transition-colors">
+                          查看
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
             )}
           </>
         )}
