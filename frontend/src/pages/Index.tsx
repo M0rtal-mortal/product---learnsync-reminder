@@ -1052,8 +1052,8 @@ export default function Index() {
                 如果您对本隐私政策有任何疑问或建议，请通过以下方式联系我们：
               </p>
               <p className="text-gray-600 mb-4">
-                邮箱：support@campussync.com<br />
-                电话：+86 123 4567 8910
+                邮箱：3762164771@qq.com<br />
+                电话：18115958611
               </p>
             </div>
           </div>
@@ -1292,8 +1292,8 @@ export default function Index() {
                 如果您在使用过程中遇到任何问题，请通过以下方式联系我们：
               </p>
               <ul className="list-disc pl-5 text-gray-600 mb-4 space-y-2">
-                <li>邮箱：support@campussync.com</li>
-                <li>电话：+86 123 4567 8910</li>
+                <li>邮箱：3762164771@qq.com</li>
+                <li>电话：18115958611</li>
                 <li>在线客服：工作日 9:00-18:00</li>
               </ul>
               
