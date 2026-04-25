@@ -41,6 +41,9 @@ export default function Index() {
   const [notifications, setNotifications] = useState<Notification[]>([]);
   const [loading, setLoading] = useState(true);
   const [importing, setImporting] = useState(false);
+  const [showPrivacyPolicy, setShowPrivacyPolicy] = useState(false);
+  const [showTermsOfService, setShowTermsOfService] = useState(false);
+  const [showHelpCenter, setShowHelpCenter] = useState(false);
 
   const fetchAll = useCallback(async () => {
     try {
@@ -952,9 +955,9 @@ export default function Index() {
               <span className="text-white/40 text-sm">学习日程提醒系统 v1.0</span>
             </div>
             <div className="flex items-center gap-6">
-              <span className="text-sm text-white/50 cursor-pointer hover:text-white/80 transition-colors">隐私政策</span>
-              <span className="text-sm text-white/50 cursor-pointer hover:text-white/80 transition-colors">使用条款</span>
-              <span className="text-sm text-white/50 cursor-pointer hover:text-white/80 transition-colors">帮助中心</span>
+              <span className="text-sm text-white/50 cursor-pointer hover:text-white/80 transition-colors" onClick={() => setShowPrivacyPolicy(true)}>隐私政策</span>
+              <span className="text-sm text-white/50 cursor-pointer hover:text-white/80 transition-colors" onClick={() => setShowTermsOfService(true)}>使用条款</span>
+              <span className="text-sm text-white/50 cursor-pointer hover:text-white/80 transition-colors" onClick={() => setShowHelpCenter(true)}>帮助中心</span>
             </div>
             <p className="text-xs text-white/30">© 2026 CampusSync · 马垠凡</p>
           </div>
@@ -963,6 +966,353 @@ export default function Index() {
 
       <OmniflowBadge />
       <Toaster />
+
+      {/* 隐私政策模态框 */}
+      {showPrivacyPolicy && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-2xl shadow-lg max-w-2xl w-full max-h-[80vh] overflow-y-auto">
+            <div className="p-6 border-b border-gray-200 flex justify-between items-center">
+              <h2 className="text-xl font-bold text-gray-900">隐私政策</h2>
+              <button 
+                onClick={() => setShowPrivacyPolicy(false)}
+                className="text-gray-400 hover:text-gray-600 transition-colors p-2 rounded-full hover:bg-gray-100"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+            <div className="p-6">
+              <h3 className="text-lg font-semibold text-gray-900 mb-4">1. 隐私政策概述</h3>
+              <p className="text-gray-600 mb-4">
+                CampusSync（以下简称"我们"）致力于保护用户的隐私和个人信息。本隐私政策描述了我们如何收集、使用、存储和保护您的个人信息，以及您对这些信息的权利。
+              </p>
+              
+              <h3 className="text-lg font-semibold text-gray-900 mb-4">2. 信息收集</h3>
+              <p className="text-gray-600 mb-4">
+                我们收集以下类型的信息：
+              </p>
+              <ul className="list-disc pl-5 text-gray-600 mb-4 space-y-2">
+                <li>个人身份信息：姓名、邮箱地址、学号等</li>
+                <li>课程信息：通过学校信息门户导入的课程表</li>
+                <li>考试信息：用户添加的考试提醒</li>
+                <li>会议信息：用户添加的会议安排</li>
+                <li>使用数据：系统使用频率、访问时间等</li>
+              </ul>
+              
+              <h3 className="text-lg font-semibold text-gray-900 mb-4">3. 信息使用</h3>
+              <p className="text-gray-600 mb-4">
+                我们使用收集的信息：
+              </p>
+              <ul className="list-disc pl-5 text-gray-600 mb-4 space-y-2">
+                <li>提供和改进我们的服务</li>
+                <li>发送重要通知和提醒</li>
+                <li>分析使用情况以优化系统</li>
+                <li>提供个性化的学习建议</li>
+              </ul>
+              
+              <h3 className="text-lg font-semibold text-gray-900 mb-4">4. 信息保护</h3>
+              <p className="text-gray-600 mb-4">
+                我们采取以下措施保护您的信息：
+              </p>
+              <ul className="list-disc pl-5 text-gray-600 mb-4 space-y-2">
+                <li>使用加密技术保护数据传输</li>
+                <li>限制对个人信息的访问权限</li>
+                <li>定期备份数据</li>
+                <li>实施安全审计和监控</li>
+              </ul>
+              
+              <h3 className="text-lg font-semibold text-gray-900 mb-4">5. 信息共享</h3>
+              <p className="text-gray-600 mb-4">
+                我们不会向第三方共享您的个人信息，除非：
+              </p>
+              <ul className="list-disc pl-5 text-gray-600 mb-4 space-y-2">
+                <li>获得您的明确授权</li>
+                <li>法律要求或合规需要</li>
+                <li>保护我们的权利、财产或安全</li>
+              </ul>
+              
+              <h3 className="text-lg font-semibold text-gray-900 mb-4">6. 您的权利</h3>
+              <p className="text-gray-600 mb-4">
+                您有权：
+              </p>
+              <ul className="list-disc pl-5 text-gray-600 mb-4 space-y-2">
+                <li>访问和查看您的个人信息</li>
+                <li>更正不准确的个人信息</li>
+                <li>删除您的个人信息</li>
+                <li>限制个人信息的处理</li>
+                <li>撤回您的授权</li>
+              </ul>
+              
+              <h3 className="text-lg font-semibold text-gray-900 mb-4">7. 隐私政策更新</h3>
+              <p className="text-gray-600 mb-4">
+                我们可能会不时更新本隐私政策。更新后，我们将在系统中发布新的隐私政策，并通过邮件或系统通知告知您。
+              </p>
+              
+              <h3 className="text-lg font-semibold text-gray-900 mb-4">8. 联系我们</h3>
+              <p className="text-gray-600 mb-4">
+                如果您对本隐私政策有任何疑问或建议，请通过以下方式联系我们：
+              </p>
+              <p className="text-gray-600 mb-4">
+                邮箱：support@campussync.com<br />
+                电话：+86 123 4567 8910
+              </p>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* 使用条款模态框 */}
+      {showTermsOfService && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-2xl shadow-lg max-w-2xl w-full max-h-[80vh] overflow-y-auto">
+            <div className="p-6 border-b border-gray-200 flex justify-between items-center">
+              <h2 className="text-xl font-bold text-gray-900">使用条款</h2>
+              <button 
+                onClick={() => setShowTermsOfService(false)}
+                className="text-gray-400 hover:text-gray-600 transition-colors p-2 rounded-full hover:bg-gray-100"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+            <div className="p-6">
+              <h3 className="text-lg font-semibold text-gray-900 mb-4">1. 服务条款概述</h3>
+              <p className="text-gray-600 mb-4">
+                欢迎使用CampusSync学习日程提醒系统（以下简称"本服务"）。本使用条款（以下简称"条款"）构成您与CampusSync之间的法律协议，规定了您使用本服务的权利和义务。
+              </p>
+              
+              <h3 className="text-lg font-semibold text-gray-900 mb-4">2. 用户账户</h3>
+              <p className="text-gray-600 mb-4">
+                为使用本服务，您需要创建一个用户账户。您同意：
+              </p>
+              <ul className="list-disc pl-5 text-gray-600 mb-4 space-y-2">
+                <li>提供真实、准确、完整的个人信息</li>
+                <li>保持账户信息的更新</li>
+                <li>对账户下的所有活动负责</li>
+                <li>保护账户密码的安全</li>
+                <li>在发现账户被未授权使用时立即通知我们</li>
+              </ul>
+              
+              <h3 className="text-lg font-semibold text-gray-900 mb-4">3. 服务使用</h3>
+              <p className="text-gray-600 mb-4">
+                您可以使用本服务：
+              </p>
+              <ul className="list-disc pl-5 text-gray-600 mb-4 space-y-2">
+                <li>导入和管理课程表</li>
+                <li>添加和管理考试提醒</li>
+                <li>添加和管理会议安排</li>
+                <li>接收学习和考试提醒</li>
+                <li>获取AI个性化学习建议</li>
+              </ul>
+              
+              <h3 className="text-lg font-semibold text-gray-900 mb-4">4. 禁止行为</h3>
+              <p className="text-gray-600 mb-4">
+                您不得：
+              </p>
+              <ul className="list-disc pl-5 text-gray-600 mb-4 space-y-2">
+                <li>使用本服务进行任何非法活动</li>
+                <li>干扰或破坏本服务的正常运行</li>
+                <li>未经授权访问或使用他人账户</li>
+                <li>上传或传播恶意软件、病毒或其他有害内容</li>
+                <li>侵犯他人的知识产权或其他权利</li>
+                <li>滥用本服务或超出合理使用范围</li>
+              </ul>
+              
+              <h3 className="text-lg font-semibold text-gray-900 mb-4">5. 知识产权</h3>
+              <p className="text-gray-600 mb-4">
+                本服务的所有内容、功能和技术，包括但不限于软件、代码、设计、文本、图形、图像、音频、视频和徽标，均为CampusSync或其许可方的知识产权。您不得复制、修改、分发、出售、租赁或以其他方式使用这些内容，除非获得我们的明确书面许可。
+              </p>
+              
+              <h3 className="text-lg font-semibold text-gray-900 mb-4">6. 免责声明</h3>
+              <p className="text-gray-600 mb-4">
+                本服务按"原样"提供，不提供任何形式的担保。我们不保证：
+              </p>
+              <ul className="list-disc pl-5 text-gray-600 mb-4 space-y-2">
+                <li>本服务将完全符合您的要求</li>
+                <li>本服务将不间断、及时、安全或无错误</li>
+                <li>使用本服务获得的结果将是准确或可靠的</li>
+                <li>本服务的任何缺陷将被修正</li>
+              </ul>
+              
+              <h3 className="text-lg font-semibold text-gray-900 mb-4">7. 责任限制</h3>
+              <p className="text-gray-600 mb-4">
+                在法律允许的最大范围内，CampusSync及其员工、董事、供应商和合作伙伴不对任何直接、间接、偶然、特殊或后果性损害承担责任，包括但不限于利润损失、数据损失、商誉损失、替代商品或服务的采购成本，无论这些损害是否基于保证、合同、侵权（包括疏忽）或任何其他法律理论。
+              </p>
+              
+              <h3 className="text-lg font-semibold text-gray-900 mb-4">8. 服务修改和终止</h3>
+              <p className="text-gray-600 mb-4">
+                我们保留随时修改、暂停或终止本服务的权利，无需事先通知。我们也保留随时终止您的账户的权利，如果您违反本条款或我们认为您的使用可能对我们或其他用户造成损害。
+              </p>
+              
+              <h3 className="text-lg font-semibold text-gray-900 mb-4">9. 条款更新</h3>
+              <p className="text-gray-600 mb-4">
+                我们可能会不时更新本条款。更新后，我们将在系统中发布新的条款，并通过邮件或系统通知告知您。继续使用本服务即表示您接受更新后的条款。
+              </p>
+              
+              <h3 className="text-lg font-semibold text-gray-900 mb-4">10. 法律适用</h3>
+              <p className="text-gray-600 mb-4">
+                本条款受中华人民共和国法律管辖，任何争议应提交至有管辖权的人民法院解决。
+              </p>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* 帮助中心模态框 */}
+      {showHelpCenter && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-2xl shadow-lg max-w-2xl w-full max-h-[80vh] overflow-y-auto">
+            <div className="p-6 border-b border-gray-200 flex justify-between items-center">
+              <h2 className="text-xl font-bold text-gray-900">帮助中心</h2>
+              <button 
+                onClick={() => setShowHelpCenter(false)}
+                className="text-gray-400 hover:text-gray-600 transition-colors p-2 rounded-full hover:bg-gray-100"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+            <div className="p-6">
+              <h3 className="text-lg font-semibold text-gray-900 mb-4">1. 系统功能介绍</h3>
+              
+              <h4 className="text-md font-medium text-gray-800 mb-2">1.1 课程表导入</h4>
+              <p className="text-gray-600 mb-4">
+                <strong>功能说明：</strong>通过学校信息门户导入课程表，自动生成学习日程。
+              </p>
+              <p className="text-gray-600 mb-4">
+                <strong>使用方法：</strong>
+              </p>
+              <ol className="list-decimal pl-5 text-gray-600 mb-4 space-y-2">
+                <li>点击"一键导入课表"按钮</li>
+                <li>在弹出的窗口中选择您的学校</li>
+                <li>输入学校信息门户的用户名和密码</li>
+                <li>点击"登录并导入课表"按钮</li>
+                <li>等待系统导入课程表，导入完成后会显示成功提示</li>
+              </ol>
+              
+              <h4 className="text-md font-medium text-gray-800 mb-2">1.2 考试提醒</h4>
+              <p className="text-gray-600 mb-4">
+                <strong>功能说明：</strong>添加和管理考试提醒，系统会在考试前发送通知。
+              </p>
+              <p className="text-gray-600 mb-4">
+                <strong>使用方法：</strong>
+              </p>
+              <ol className="list-decimal pl-5 text-gray-600 mb-4 space-y-2">
+                <li>在"即将到来的考试"模块中，点击"添加考试提醒"按钮</li>
+                <li>填写考试名称、日期、时间、地点等信息</li>
+                <li>点击"保存"按钮</li>
+                <li>系统会自动计算距离考试的天数，并在考试前发送提醒</li>
+              </ol>
+              
+              <h4 className="text-md font-medium text-gray-800 mb-2">1.3 会议管理</h4>
+              <p className="text-gray-600 mb-4">
+                <strong>功能说明：</strong>添加和管理会议安排，系统会在会议前发送通知。
+              </p>
+              <p className="text-gray-600 mb-4">
+                <strong>使用方法：</strong>
+              </p>
+              <ol className="list-decimal pl-5 text-gray-600 mb-4 space-y-2">
+                <li>点击顶部导航栏中的"会议管理"</li>
+                <li>点击"添加会议"按钮</li>
+                <li>填写会议名称、日期、时间、地点、参与者等信息</li>
+                <li>点击"保存"按钮</li>
+                <li>系统会在会议前发送提醒</li>
+              </ol>
+              
+              <h4 className="text-md font-medium text-gray-800 mb-2">1.4 通知设置</h4>
+              <p className="text-gray-600 mb-4">
+                <strong>功能说明：</strong>设置通知偏好，包括通知方式、时间等。
+              </p>
+              <p className="text-gray-600 mb-4">
+                <strong>使用方法：</strong>
+              </p>
+              <ol className="list-decimal pl-5 text-gray-600 mb-4 space-y-2">
+                <li>点击顶部导航栏中的"通知设置"</li>
+                <li>选择您希望接收的通知类型</li>
+                <li>设置通知的时间和方式</li>
+                <li>点击"保存"按钮</li>
+              </ol>
+              
+              <h4 className="text-md font-medium text-gray-800 mb-2">1.5 AI个性化学习辅助</h4>
+              <p className="text-gray-600 mb-4">
+                <strong>功能说明：</strong>根据您的课表和考试安排，提供个性化的学习建议和时间安排。
+              </p>
+              <p className="text-gray-600 mb-4">
+                <strong>使用方法：</strong>
+              </p>
+              <ol className="list-decimal pl-5 text-gray-600 mb-4 space-y-2">
+                <li>在仪表盘页面的"AI个性化学习辅助"模块中，点击"与AI交流"按钮</li>
+                <li>在聊天窗口中输入您的问题，例如"分析我的学习日程"、"如何安排学习时间？"等</li>
+                <li>AI助手会根据您的课表和考试安排生成个性化的建议</li>
+                <li>您可以继续与AI助手交流，获取更多建议</li>
+              </ol>
+              
+              <h3 className="text-lg font-semibold text-gray-900 mb-4">2. 常见问题</h3>
+              
+              <h4 className="text-md font-medium text-gray-800 mb-2">2.1 无法导入课表怎么办？</h4>
+              <p className="text-gray-600 mb-4">
+                <strong>解决方案：</strong>
+              </p>
+              <ul className="list-disc pl-5 text-gray-600 mb-4 space-y-2">
+                <li>检查您的网络连接是否正常</li>
+                <li>确认您的学校信息门户用户名和密码是否正确</li>
+                <li>确认您的学校信息门户是否可以正常访问</li>
+                <li>如果问题仍然存在，请联系系统管理员</li>
+              </ul>
+              
+              <h4 className="text-md font-medium text-gray-800 mb-2">2.2 如何修改课程信息？</h4>
+              <p className="text-gray-600 mb-4">
+                <strong>解决方案：</strong>
+              </p>
+              <ul className="list-disc pl-5 text-gray-600 mb-4 space-y-2">
+                <li>在日程总览页面，找到您要修改的课程</li>
+                <li>点击课程卡片上的编辑按钮</li>
+                <li>在弹出的编辑窗口中修改课程信息</li>
+                <li>点击"保存"按钮</li>
+              </ul>
+              
+              <h4 className="text-md font-medium text-gray-800 mb-2">2.3 如何删除考试提醒？</h4>
+              <p className="text-gray-600 mb-4">
+                <strong>解决方案：</strong>
+              </p>
+              <ul className="list-disc pl-5 text-gray-600 mb-4 space-y-2">
+                <li>在考试提醒页面，找到您要删除的考试</li>
+                <li>点击考试卡片上的删除按钮</li>
+                <li>在确认对话框中点击"确定"按钮</li>
+              </ul>
+              
+              <h4 className="text-md font-medium text-gray-800 mb-2">2.4 如何设置单双周课程？</h4>
+              <p className="text-gray-600 mb-4">
+                <strong>解决方案：</strong>
+              </p>
+              <ul className="list-disc pl-5 text-gray-600 mb-4 space-y-2">
+                <li>在编辑课程信息时，在"周类型"选项中选择"单周"或"双周"</li>
+                <li>系统会根据当前周数自动显示或隐藏单双周课程</li>
+              </ul>
+              
+              <h3 className="text-lg font-semibold text-gray-900 mb-4">3. 联系支持</h3>
+              <p className="text-gray-600 mb-4">
+                如果您在使用过程中遇到任何问题，请通过以下方式联系我们：
+              </p>
+              <ul className="list-disc pl-5 text-gray-600 mb-4 space-y-2">
+                <li>邮箱：support@campussync.com</li>
+                <li>电话：+86 123 4567 8910</li>
+                <li>在线客服：工作日 9:00-18:00</li>
+              </ul>
+              
+              <h3 className="text-lg font-semibold text-gray-900 mb-4">4. 系统更新日志</h3>
+              <p className="text-gray-600 mb-4">
+                <strong>v1.0 (2026-04-25)</strong>
+              </p>
+              <ul className="list-disc pl-5 text-gray-600 mb-4 space-y-2">
+                <li>初始版本发布</li>
+                <li>实现课程表导入功能</li>
+                <li>实现考试提醒功能</li>
+                <li>实现会议管理功能</li>
+                <li>实现AI个性化学习辅助功能</li>
+              </ul>
+            </div>
+          </div>
+        </div>
+      )}
+
     </div>
   );
 }
