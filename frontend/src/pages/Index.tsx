@@ -536,6 +536,381 @@ export default function Index() {
                         )}
                       </div>
                     </div>
+
+                    {/* AI Personalized Learning Assistant */}
+                    <div className="bg-white rounded-2xl border border-[oklch(0.87_0.02_240)] shadow-sm overflow-hidden">
+                      <div className="px-5 py-4 border-b border-[oklch(0.87_0.02_240)] flex items-center justify-between">
+                        <h3 className="font-serif font-bold text-[oklch(0.12_0.025_240)]">AI个性化学习辅助</h3>
+                        <div className="w-6 h-6 bg-[oklch(0.78_0.15_75)]/15 rounded-full flex items-center justify-center">
+                          <svg className="w-3 h-3 text-[oklch(0.78_0.15_75)]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
+                          </svg>
+                        </div>
+                      </div>
+                      <div className="p-4 space-y-4">
+                        {(() => {
+                          // Generate AI learning suggestions based on courses and exams
+                          const suggestions = [];
+                          
+                          // Check if there are any courses
+                          if (courses.length > 0) {
+                            // Count courses per day
+                            const coursesPerDay = courses.reduce((acc, course) => {
+                              acc[course.dayOfWeek] = (acc[course.dayOfWeek] || 0) + 1;
+                              return acc;
+                            }, {} as Record<number, number>);
+                            
+                            // Find day with most courses
+                            const busiestDay = Object.entries(coursesPerDay).reduce((max, [day, count]) => 
+                              count > (max.count || 0) ? { day: parseInt(day), count } : max
+                            , { day: 0, count: 0 });
+                            
+                            if (busiestDay.count > 1) {
+                              suggestions.push({
+                                type: 'warning',
+                                message: `您${DAY_LABELS[busiestDay.day]}有${busiestDay.count}门课程，建议提前准备学习材料。`
+                              });
+                            }
+                            
+                            // Check for evening courses
+                            const eveningCourses = courses.filter(c => {
+                              const hour = parseInt(c.startTime.split(':')[0]);
+                              return hour >= 18;
+                            });
+                            
+                            if (eveningCourses.length > 0) {
+                              suggestions.push({
+                                type: 'info',
+                                message: `您有${eveningCourses.length}门晚间课程，建议合理安排白天的学习时间。`
+                              });
+                            }
+                          }
+                          
+                          // Check if there are any exams
+                          if (upcomingExams.length > 0) {
+                            const closestExam = upcomingExams[0];
+                            const daysUntil = getDaysUntil(closestExam.examDate);
+                            
+                            if (daysUntil <= 7) {
+                              suggestions.push({
+                                type: 'warning',
+                                message: `${closestExam.name}将在${daysUntil}天后进行，建议加强复习。`
+                              });
+                            } else if (daysUntil <= 30) {
+                              suggestions.push({
+                                type: 'info',
+                                message: `${closestExam.name}将在${daysUntil}天后进行，建议开始系统复习。`
+                              });
+                            }
+                          }
+                          
+                          // General suggestions
+                          if (courses.length === 0) {
+                            suggestions.push({
+                              type: 'info',
+                              message: '请导入课表以获取个性化学习建议。'
+                            });
+                          } else if (exams.length === 0) {
+                            suggestions.push({
+                              type: 'info',
+                              message: '建议添加考试提醒以获得更全面的学习规划。'
+                            });
+                          } else {
+                            suggestions.push({
+                              type: 'success',
+                              message: '根据您的课表和考试安排，建议制定每周学习计划，合理分配复习时间。'
+                            });
+                          }
+                          
+                          return suggestions;
+                        })().map((suggestion, index) => (
+                          <div key={index} className={`flex items-start gap-3 p-3 rounded-xl border ${suggestion.type === 'warning' ? 'bg-amber-50 border-amber-100' : suggestion.type === 'success' ? 'bg-green-50 border-green-100' : 'bg-blue-50 border-blue-100'}`}>
+                            <div className={`w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0 mt-0.5 ${suggestion.type === 'warning' ? 'bg-amber-100 text-amber-600' : suggestion.type === 'success' ? 'bg-green-100 text-green-600' : 'bg-blue-100 text-blue-600'}`}>
+                              {suggestion.type === 'warning' ? (
+                                <AlertTriangle className="w-4 h-4" />
+                              ) : suggestion.type === 'success' ? (
+                                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                                </svg>
+                              ) : (
+                                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                </svg>
+                              )}
+                            </div>
+                            <p className="text-sm text-[oklch(0.12_0.025_240)]">{suggestion.message}</p>
+                          </div>
+                        ))}
+                        
+                        {/* Chat Button */}
+                        <button
+                          onClick={() => {
+                            // Close any existing chat containers
+                            const existingChats = document.querySelectorAll('.chat-container');
+                            existingChats.forEach(chat => chat.remove());
+                            
+                            const chatContainer = document.createElement('div');
+                            chatContainer.className = 'chat-container fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4';
+                            chatContainer.innerHTML = `
+                              <div className="bg-white rounded-2xl w-full max-w-md max-h-[80vh] flex flex-col shadow-sm border border-[oklch(0.87_0.02_240)]">
+                                <div className="p-4 border-b border-[oklch(0.87_0.02_240)] flex items-center justify-between bg-white">
+                                  <h3 className="font-serif font-bold text-[oklch(0.12_0.025_240)]">AI学习助手</h3>
+                                  <button class="close-btn text-[oklch(0.48_0.05_240)] hover:text-[oklch(0.12_0.025_240)] p-2 rounded-full hover:bg-[oklch(0.955_0.008_240)] transition-colors">
+                                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                                    </svg>
+                                  </button>
+                                </div>
+                                <div class="chat-messages flex-1 p-4 overflow-y-auto space-y-4 bg-white" id="chat-messages">
+                                  <div class="flex gap-3">
+                                    <div class="w-8 h-8 bg-[oklch(0.78_0.15_75)] rounded-full flex items-center justify-center flex-shrink-0">
+                                      <svg className="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
+                                      </svg>
+                                    </div>
+                                    <div class="bg-[oklch(0.955_0.008_240)] rounded-xl p-3 max-w-[80%]">
+                                      <p class="text-sm">你好！我是你的AI学习助手。我可以帮你解决日期安排问题，提供学习方法建议。请问有什么可以帮助你的？</p>
+                                    </div>
+                                  </div>
+                                </div>
+                                <div className="p-4 border-t border-[oklch(0.87_0.02_240)] bg-white">
+                                  <div className="flex gap-2">
+                                    <input type="text" placeholder="输入你的问题..." class="flex-1 border border-[oklch(0.87_0.02_240)] rounded-xl px-4 py-2 focus:outline-none focus:ring-2 focus:ring-[oklch(0.78_0.15_75)] focus:border-transparent" id="chat-input" />
+                                    <button class="send-btn bg-[oklch(0.78_0.15_75)] hover:bg-[oklch(0.72_0.15_75)] text-white rounded-xl px-4 py-2 transition-colors">
+                                      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8" />
+                                      </svg>
+                                    </button>
+                                  </div>
+                                </div>
+                              </div>
+                            `;
+                            
+                            document.body.appendChild(chatContainer);
+                            
+                            // Close button functionality
+                            const closeBtn = chatContainer.querySelector('.close-btn');
+                            if (closeBtn) {
+                              closeBtn.addEventListener('click', () => {
+                                chatContainer.remove();
+                              });
+                            }
+                            
+                            // Also allow clicking outside the chat box to close it
+                            chatContainer.addEventListener('click', (e) => {
+                              if (e.target === chatContainer) {
+                                chatContainer.remove();
+                              }
+                            });
+                            
+                            // Send button functionality
+                            const sendBtn = chatContainer.querySelector('.send-btn');
+                            const chatInput = chatContainer.querySelector('#chat-input') as HTMLInputElement;
+                            const chatMessages = chatContainer.querySelector('#chat-messages');
+                            
+                            const sendMessage = () => {
+                              const message = chatInput.value.trim();
+                              if (message) {
+                                // Add user message
+                                const userMessageHTML = `
+                                  <div class="flex gap-3 justify-end">
+                                    <div class="bg-[oklch(0.78_0.15_75)] text-white rounded-xl p-3 max-w-[80%]">
+                                      <p class="text-sm">${message}</p>
+                                    </div>
+                                    <div class="w-8 h-8 bg-[oklch(0.28_0.07_240)] rounded-full flex items-center justify-center flex-shrink-0">
+                                      <svg className="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                                      </svg>
+                                    </div>
+                                  </div>
+                                `;
+                                chatMessages?.insertAdjacentHTML('beforeend', userMessageHTML);
+                                
+                                // Clear input
+                                chatInput.value = '';
+                                
+                                // Scroll to bottom
+                                if (chatMessages) {
+                                  chatMessages.scrollTop = chatMessages.scrollHeight;
+                                }
+                                
+                                // Simulate AI response
+                                setTimeout(() => {
+                                  let response = '';
+                                  
+                                  // Parse user request for specific requirements
+                                  const hasWordLimit = message.includes('字') || message.includes('简短');
+                                  const requestedWords = message.match(/(\d+)字/);
+                                  const wordLimit = requestedWords ? parseInt(requestedWords[1]) : 0;
+                                  
+                                  // Analyze user request
+                                  const lowerMessage = message.toLowerCase();
+                                  
+                                  // Analyze courses data
+                                  const coursesPerDay: Record<number, string[]> = {};
+                                  courses.forEach(c => {
+                                    if (!coursesPerDay[c.dayOfWeek]) {
+                                      coursesPerDay[c.dayOfWeek] = [];
+                                    }
+                                    coursesPerDay[c.dayOfWeek].push(c.name);
+                                  });
+                                  
+                                  // Find busiest day
+                                  let busiestDay = 0;
+                                  let busiestCount = 0;
+                                  Object.entries(coursesPerDay).forEach(([day, courseList]) => {
+                                    if (courseList.length > busiestCount) {
+                                      busiestCount = courseList.length;
+                                      busiestDay = parseInt(day);
+                                    }
+                                  });
+                                  
+                                  // Analyze exams
+                                  const upcomingExamsSorted = [...exams]
+                                    .filter(e => e.status !== 'completed')
+                                    .sort((a, b) => a.examDate.localeCompare(b.examDate));
+                                  
+                                  // Generate personalized response
+                                  if (lowerMessage.includes('分析') || lowerMessage.includes('学习日程') || lowerMessage.includes('课表')) {
+                                    if (courses.length === 0) {
+                                      response = '请先导入你的课表，这样我可以为你分析学习日程。';
+                                    } else {
+                                      response = `根据你的课表分析：\n\n`;
+                                      response += `• 你本周共有${courses.length}门课程\n`;
+                                      response += `• 最忙碌的是${DAY_LABELS[busiestDay]}，有${busiestCount}门课程\n`;
+                                      
+                                      // List courses for busiest day
+                                      const busiestCourses = coursesPerDay[busiestDay] || [];
+                                      if (busiestCourses.length > 0) {
+                                        response += `• ${DAY_LABELS[busiestDay]}的课程包括：${busiestCourses.join('、')}\n`;
+                                      }
+                                      
+                                      // Check evening courses
+                                      const eveningCourses = courses.filter(c => {
+                                        const hour = parseInt(c.startTime.split(':')[0]);
+                                        return hour >= 18;
+                                      });
+                                      if (eveningCourses.length > 0) {
+                                        response += `• 你有${eveningCourses.length}门晚间课程，建议合理安排白天学习时间\n`;
+                                      }
+                                      
+                                      response += `\n建议：利用周末时间复习本周内容，特别是${busiestCourses.slice(0, 2).join('和')}这两门课程。`;
+                                    }
+                                  } else if (lowerMessage.includes('时间') || lowerMessage.includes('安排')) {
+                                    if (courses.length === 0) {
+                                      response = '请先导入你的课表，这样我可以为你提供更准确的时间安排建议。';
+                                    } else {
+                                      response = `根据你的课表，我建议以下时间安排：\n\n`;
+                                      response += `• 优先安排${DAY_LABELS[busiestDay]}的学习，那天有${busiestCount}门课程\n`;
+                                      response += `• 每天课后花30分钟复习当天内容\n`;
+                                      response += `• 周末安排2-3小时进行本周内容总结\n`;
+                                      
+                                      if (upcomingExamsSorted.length > 0) {
+                                        const nextExam = upcomingExamsSorted[0];
+                                        const daysUntil = getDaysUntil(nextExam.examDate);
+                                        response += `• ${nextExam.name}将在${daysUntil}天后，建议每天安排1小时复习\n`;
+                                      }
+                                      
+                                      response += `\n保持规律作息，确保充足睡眠，学习效率会更高。`;
+                                    }
+                                  } else if (lowerMessage.includes('复习') || lowerMessage.includes('考试')) {
+                                    if (exams.length === 0) {
+                                      response = '建议你添加考试提醒，这样我可以为你制定详细的复习计划。';
+                                    } else {
+                                      response = `根据你的考试安排，建议以下复习计划：\n\n`;
+                                      upcomingExamsSorted.forEach((exam, index) => {
+                                        const daysUntil = getDaysUntil(exam.examDate);
+                                        if (daysUntil > 0) {
+                                          response += `• ${exam.name}（${exam.examDate}）：剩余${daysUntil}天\n`;
+                                          response += `  - 每天复习${Math.ceil(100 / daysUntil)}%的内容\n`;
+                                          response += `  - 考前3天进行模拟测试\n`;
+                                        }
+                                      });
+                                      response += `\n建议：将大任务分解为小目标，每天完成一部分，避免考前突击。`;
+                                    }
+                                  } else if (lowerMessage.includes('学习方法') || lowerMessage.includes('如何学习') || lowerMessage.includes('建议')) {
+                                    if (courses.length === 0) {
+                                      response = '请先导入课表，这样我可以提供针对性的学习方法建议。';
+                                    } else {
+                                      // Get unique course types
+                                      const courseNames = courses.map(c => c.name);
+                                      const hasProgramming = courseNames.some(n => n.includes('编程') || n.includes('Python') || n.includes('NET') || n.includes('Java'));
+                                      const hasTheory = courseNames.some(n => n.includes('概论') || n.includes('思想') || n.includes('原理'));
+                                      
+                                      response = `根据你的课程特点，建议以下学习方法：\n\n`;
+                                      
+                                      if (hasProgramming) {
+                                        response += `• 编程类课程：多动手实践，每天至少写30分钟代码，通过项目巩固知识\n`;
+                                      }
+                                      if (hasTheory) {
+                                        response += `• 理论类课程：制作思维导图，定期回顾重点概念，尝试向他人讲解\n`;
+                                      }
+                                      
+                                      response += `• 通用方法：课前预习15分钟，课堂做好笔记，课后24小时内复习\n`;
+                                      response += `• 利用碎片时间：通勤路上听相关音频，午休前回顾当天内容\n`;
+                                      response += `• 每周日进行知识总结，构建完整的知识体系`;
+                                    }
+                                  } else {
+                                    response = `我是你的AI学习助手，可以帮你：\n\n`;
+                                    response += `• 分析学习日程，优化时间安排\n`;
+                                    response += `• 制定考试复习计划\n`;
+                                    response += `• 提供个性化学习方法建议\n\n`;
+                                    response += `请告诉我你的具体需求，例如"分析我的学习日程"或"如何复习考试"。`;
+                                  }
+                                  
+                                  // If word limit is specified, truncate response
+                                  if (wordLimit > 0 && response.length > wordLimit) {
+                                    // Find a good breaking point
+                                    let breakPoint = response.lastIndexOf('。', wordLimit);
+                                    if (breakPoint === -1) {
+                                      breakPoint = response.lastIndexOf('\n', wordLimit);
+                                    }
+                                    if (breakPoint === -1) {
+                                      breakPoint = wordLimit;
+                                    }
+                                    response = response.substring(0, breakPoint + 1);
+                                  }
+                                  
+                                  const aiMessageHTML = `
+                                    <div class="flex gap-3">
+                                      <div class="w-8 h-8 bg-[oklch(0.78_0.15_75)] rounded-full flex items-center justify-center flex-shrink-0">
+                                        <svg className="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
+                                        </svg>
+                                      </div>
+                                      <div class="bg-[oklch(0.955_0.008_240)] rounded-xl p-3 max-w-[80%]">
+                                        <p class="text-sm whitespace-pre-line">${response}</p>
+                                      </div>
+                                    </div>
+                                  `;
+                                  chatMessages?.insertAdjacentHTML('beforeend', aiMessageHTML);
+                                  
+                                  // Scroll to bottom
+                                  if (chatMessages) {
+                                    chatMessages.scrollTop = chatMessages.scrollHeight;
+                                  }
+                                }, 1000);
+                              }
+                            };
+                            
+                            sendBtn?.addEventListener('click', sendMessage);
+                            
+                            // Enter key functionality
+                            chatInput?.addEventListener('keypress', (e) => {
+                              if (e.key === 'Enter') {
+                                sendMessage();
+                              }
+                            });
+                          }}
+                          className="w-full py-3 bg-[oklch(0.955_0.008_240)] hover:bg-[oklch(0.92_0.01_240)] rounded-xl border border-[oklch(0.87_0.02_240)] flex items-center justify-center gap-2 text-sm font-medium text-[oklch(0.28_0.07_240)] transition-colors"
+                        >
+                          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
+                          </svg>
+                          与AI交流
+                        </button>
+                      </div>
+                    </div>
                   </div>
                 </div>
               </div>
