@@ -1077,29 +1077,7 @@ export default function Index() {
                       </div>
                     </div>
                   </div>
-                  <div className="border-t border-[oklch(0.87_0.02_240)] pt-6">
-                    <h4 className="font-semibold text-[oklch(0.12_0.025_240)] mb-4">安全设置</h4>
-                    <div className="space-y-4">
-                      <div className="flex items-center justify-between">
-                        <div>
-                          <p className="text-sm font-medium text-[oklch(0.12_0.025_240)]">两步验证</p>
-                          <p className="text-xs text-[oklch(0.48_0.05_240)]">提高账号安全性</p>
-                        </div>
-                        <button className="px-4 py-1.5 bg-[oklch(0.28_0.07_240)] hover:bg-[oklch(0.35_0.08_240)] text-white text-sm font-medium rounded-xl transition-colors">
-                          开启
-                        </button>
-                      </div>
-                      <div className="flex items-center justify-between">
-                        <div>
-                          <p className="text-sm font-medium text-[oklch(0.12_0.025_240)]">登录设备管理</p>
-                          <p className="text-xs text-[oklch(0.48_0.05_240)]">查看并管理登录设备</p>
-                        </div>
-                        <button className="px-4 py-1.5 bg-white border border-[oklch(0.87_0.02_240)] hover:bg-[oklch(0.955_0.008_240)] text-[oklch(0.28_0.07_240)] text-sm font-medium rounded-xl transition-colors">
-                          查看
-                        </button>
-                      </div>
-                    </div>
-                  </div>
+
                 </div>
               </div>
             )}
